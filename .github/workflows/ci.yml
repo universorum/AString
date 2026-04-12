@@ -15,12 +15,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - framework: netcoreapp2.0
-            runs-on: ubuntu-20.04
-            runtime-dotnet: '2.0.x'
+          - framework: netcoreapp2.1
+            runs-on: ubuntu-latest
+            runtime-dotnet: '2.1.x'
+            install-libssl: true
           - framework: netcoreapp3.0
-            runs-on: ubuntu-20.04
+            runs-on: ubuntu-latest
             runtime-dotnet: '3.0.x'
+            install-libssl: true
           - framework: net8.0
             runs-on: ubuntu-latest
             runtime-dotnet: '8.x'
@@ -29,6 +31,11 @@ jobs:
             runtime-dotnet: '10.x'
     steps:
       - uses: actions/checkout@v6
+      - name: Install libssl1.1 (required for netcoreapp2.0/3.0 on Ubuntu 22.04)
+        if: matrix.install-libssl
+        run: |
+          wget -q http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+          sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb
       - name: Setup .NET (build SDK)
         uses: actions/setup-dotnet@v5
         with:
