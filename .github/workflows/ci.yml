@@ -80,7 +80,7 @@ jobs:
           retention-days: 1
   publish:
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v') && env.NUGET_API_KEY != ''
+    if: startsWith(github.ref, 'refs/tags/v') && secrets.NUGET_API_KEY != ''
     needs: [test, pack]
     env:
       NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
