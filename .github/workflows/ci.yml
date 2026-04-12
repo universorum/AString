@@ -42,7 +42,7 @@ jobs:
         run: dotnet restore tests/AString.Tests/AString.Tests.csproj
       - name: Test
         run: >
-          dotnet test tests/AString.Tests/AString.Tests.csproj
+          dotnet test --project tests/AString.Tests/AString.Tests.csproj
           --configuration Release
           --framework ${{ matrix.framework }}
           --verbosity normal
