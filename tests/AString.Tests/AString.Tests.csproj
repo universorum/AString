@@ -18,6 +18,10 @@
         <PackageReference Include="TUnit" Version="1.22.6"/>
     </ItemGroup>
 
+    <PropertyGroup Condition="$(TargetFramework) == 'netcoreapp2.0' OR $(TargetFramework) == 'netcoreapp3.0'">
+        <UseAppHost>false</UseAppHost>
+    </PropertyGroup>
+
     <ItemGroup Condition="$(TargetFramework) == 'netcoreapp2.0' OR $(TargetFramework) == 'netcoreapp3.0'">
         <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="10.0.5"/>
     </ItemGroup>
