@@ -768,23 +768,25 @@ public partial struct ValueStringBuilder
 
         var cfs = cf?.Format(format.ToString(), arg, provider);
 
-        if (cfs == null) { AppendFormatInternal(arg, width, format); }
+        if (cfs == null) { AppendFormatInternal(arg, width, format, provider); }
         else { AppendFormatInternal(cfs,             width, format); }
     }
 
     private void AppendFormatInternal<T>(T arg,
         int width,
-        [StringSyntax(StringSyntaxAttribute.CompositeFormat)] ReadOnlySpan<char> format)
+        [StringSyntax(StringSyntaxAttribute.CompositeFormat)] ReadOnlySpan<char> format,
+        IFormatProvider? provider = null)
     {
         ObjectDisposedException.ThrowIf(_disposed, typeof(ValueStringBuilder));
 
-        if (width <= 0) { AppendFormatLeft(arg, width, format); }
-        else { AppendFormatRight(arg, width, format); }
+        if (width <= 0) { AppendFormatLeft(arg, width, format, provider); }
+        else { AppendFormatRight(arg, width, format, provider); }
     }
 
     private void AppendFormatLeft<T>(T arg,
         int width,
-        [StringSyntax(StringSyntaxAttribute.CompositeFormat)] ReadOnlySpan<char> format)
+        [StringSyntax(StringSyntaxAttribute.CompositeFormat)] ReadOnlySpan<char> format,
+        IFormatProvider? provider = null)
     {
         width *= -1;
 
@@ -795,7 +797,7 @@ public partial struct ValueStringBuilder
 
         while (true)
         {
-            if (FormatterCache.TryFormat(arg, _buffer.AsSpan(_length), out charsWritten, format))
+            if (FormatterCache.TryFormat(arg, _buffer.AsSpan(_length), out charsWritten, format, provider))
             {
                 _length      += charsWritten;
                 isSuccessful =  true;
@@ -809,7 +811,7 @@ public partial struct ValueStringBuilder
 
         if (!isSuccessful)
         {
-            var str = FormatterCache.Format(arg, format);
+            var str = FormatterCache.Format(arg, format, provider);
             charsWritten = str.Length;
             Append(str);
         }
@@ -822,7 +824,8 @@ public partial struct ValueStringBuilder
 
     private void AppendFormatRight<T>(T arg,
         int width,
-        [StringSyntax(StringSyntaxAttribute.CompositeFormat)] ReadOnlySpan<char> format)
+        [StringSyntax(StringSyntaxAttribute.CompositeFormat)] ReadOnlySpan<char> format,
+        IFormatProvider? provider = null)
     {
         if (typeof(T) == typeof(string))
         {
@@ -835,14 +838,14 @@ public partial struct ValueStringBuilder
         scoped ReadOnlySpan<char> ros;
         Span<char>                span = stackalloc char[guestLength];
 
-        if (FormatterCache.TryFormat(arg, span, out var charsWritten, format)) { ros = span[..charsWritten]; }
+        if (FormatterCache.TryFormat(arg, span, out var charsWritten, format, provider)) { ros = span[..charsWritten]; }
         else
         {
             span = stackalloc char[span.Length * 2];
-            if (FormatterCache.TryFormat(arg, span, out charsWritten, format)) { ros = span[..charsWritten]; }
+            if (FormatterCache.TryFormat(arg, span, out charsWritten, format, provider)) { ros = span[..charsWritten]; }
             else
             {
-                var str = FormatterCache.Format(arg, format);
+                var str = FormatterCache.Format(arg, format, provider);
                 ros          = str.AsSpan();
                 charsWritten = str.Length;
             }

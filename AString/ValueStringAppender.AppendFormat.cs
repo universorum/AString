@@ -776,23 +776,25 @@ public partial struct ValueStringAppender
 
         var cfs = cf?.Format(format.ToString(), arg, provider);
 
-        if (cfs == null) { AppendFormatInternal(arg, width, format); }
+        if (cfs == null) { AppendFormatInternal(arg, width, format, provider); }
         else { AppendFormatInternal(cfs,             width, format); }
     }
 
     private void AppendFormatInternal<T>(T arg,
         int width,
-        [StringSyntax(StringSyntaxAttribute.CompositeFormat)] ReadOnlySpan<char> format)
+        [StringSyntax(StringSyntaxAttribute.CompositeFormat)] ReadOnlySpan<char> format,
+        IFormatProvider? provider = null)
     {
         ObjectDisposedException.ThrowIf(_disposed, typeof(ValueStringAppender));
 
-        if (width <= 0) { AppendFormatLeft(arg, width, format); }
-        else { AppendFormatRight(arg, width, format); }
+        if (width <= 0) { AppendFormatLeft(arg, width, format, provider); }
+        else { AppendFormatRight(arg, width, format, provider); }
     }
 
     private void AppendFormatLeft<T>(T arg,
         int width,
-        [StringSyntax(StringSyntaxAttribute.CompositeFormat)] ReadOnlySpan<char> format)
+        [StringSyntax(StringSyntaxAttribute.CompositeFormat)] ReadOnlySpan<char> format,
+        IFormatProvider? provider = null)
     {
         width *= -1;
 
@@ -803,13 +805,13 @@ public partial struct ValueStringAppender
         var guestLength = GetGuestLength<T>();
         while (true)
         {
-            charsWritten = TryAppend(ref this, arg, guestLength * (i + 1), format);
+            charsWritten = TryAppend(ref this, arg, guestLength * (i + 1), format, provider);
             if (charsWritten.HasValue || i++ >= maxRetry) { break; }
         }
 
         if (!charsWritten.HasValue)
         {
-            var str = FormatterCache.Format(arg, format);
+            var str = FormatterCache.Format(arg, format, provider);
             charsWritten = str.Length;
             Append(str);
         }
@@ -819,10 +821,14 @@ public partial struct ValueStringAppender
 
         Append(' ', padding);
 
-        static int? TryAppend(ref ValueStringAppender self, T value, int guestLength, ReadOnlySpan<char> format)
+        static int? TryAppend(ref ValueStringAppender self,
+            T value,
+            int guestLength,
+            ReadOnlySpan<char> format,
+            IFormatProvider? provider)
         {
             Span<char> buffer = stackalloc char[guestLength];
-            if (!FormatterCache.TryFormat(value, buffer, out var charsWritten, format)) { return null; }
+            if (!FormatterCache.TryFormat(value, buffer, out var charsWritten, format, provider)) { return null; }
 
             self.Append(buffer[..charsWritten]);
             return charsWritten;
@@ -831,7 +837,8 @@ public partial struct ValueStringAppender
 
     private void AppendFormatRight<T>(T arg,
         int width,
-        [StringSyntax(StringSyntaxAttribute.CompositeFormat)] ReadOnlySpan<char> format)
+        [StringSyntax(StringSyntaxAttribute.CompositeFormat)] ReadOnlySpan<char> format,
+        IFormatProvider? provider = null)
     {
         if (typeof(T) == typeof(string))
         {
@@ -844,14 +851,14 @@ public partial struct ValueStringAppender
         scoped ReadOnlySpan<char> ros;
         Span<char>                span = stackalloc char[guestLength];
 
-        if (FormatterCache.TryFormat(arg, span, out var charsWritten, format)) { ros = span[..charsWritten]; }
+        if (FormatterCache.TryFormat(arg, span, out var charsWritten, format, provider)) { ros = span[..charsWritten]; }
         else
         {
             span = stackalloc char[span.Length * 2];
-            if (FormatterCache.TryFormat(arg, span, out charsWritten, format)) { ros = span[..charsWritten]; }
+            if (FormatterCache.TryFormat(arg, span, out charsWritten, format, provider)) { ros = span[..charsWritten]; }
             else
             {
-                var str = FormatterCache.Format(arg, format);
+                var str = FormatterCache.Format(arg, format, provider);
                 ros          = str.AsSpan();
                 charsWritten = str.Length;
             }
