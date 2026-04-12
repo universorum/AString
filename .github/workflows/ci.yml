@@ -75,6 +75,8 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
     needs: [test, pack]
+    env:
+      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
     steps:
       - name: Download build output
         uses: actions/download-artifact@v8
@@ -82,9 +84,7 @@ jobs:
           name: package
           path: ./nupkg/
       - name: Push to NuGet
-        if: ${{ secrets.NUGET_API_KEY != '' }}
-        env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        if: ${{ env.NUGET_API_KEY != '' }}
         run: >
           dotnet nuget push ./nupkg/*.nupkg
           --api-key "$NUGET_API_KEY"
