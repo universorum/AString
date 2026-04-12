@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <WarningsAsErrors>nullable</WarningsAsErrors>
+        <RootNamespace>Astra.Text</RootNamespace>
+        <LangVersion>latest</LangVersion>
+        <TargetFrameworks>netstandard2.0;netstandard2.1;net8.0</TargetFrameworks>
+        <AssemblyName>AString</AssemblyName>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Version>0.9.9-beta.1</Version>
+        <Authors>Universorum</Authors>
+
+        <!-- NuGet package metadata -->
+        <PackageId>Astra.AString</PackageId>
+        <Title>Astra.AString</Title>
+        <Description>A high-performance string builder library for .NET, providing ValueStringBuilder and ValueStringAppender with support for interpolated strings, UTF-8, formatting, and more.</Description>
+        <PackageTags>string;builder;stringbuilder;performance;high-performance;text;utf8;interpolation</PackageTags>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryUrl>https://github.com/universorum/AString</RepositoryUrl>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <Deterministic>true</Deterministic>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="JetBrains.Annotations" Version="2025.2.4"/>
+        <PackageReference Include="PolySharp" Version="1.15.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup Condition="$(TargetFramework) == 'netstandard2.0' OR $(TargetFramework) == 'netstandard2.1'">
+        <PackageReference Include="System.Collections.Immutable" Version="10.0.5"/>
+        <ProjectReference Include="..\AString.Unsafe\AString.Unsafe.csproj"/>
+    </ItemGroup>
+
+</Project>

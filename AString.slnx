@@ -1,0 +1,5 @@
+<Solution>
+    <Project Path="AString.Unsafe/AString.Unsafe.csproj"/>
+    <Project Path="AString\AString.csproj"/>
+    <Project Path="tests\AString.Tests\AString.Tests.csproj"/>
+</Solution>
