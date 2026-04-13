@@ -6,10 +6,96 @@ namespace Astra.Text;
 public partial struct ValueStringAppender
 {
     [PublicAPI]
-    public void AppendLine() { Append(Environment.NewLine); }
+    public void AppendLine() => Append(Environment.NewLine);
+
+    /// <summary>Appends part of a string to the end of this builder.</summary>
+    /// <param name="value">The string to append.</param>
+    /// <param name="startIndex">The index to start in <paramref name="value" />.</param>
+    /// <param name="count">The number of characters to read in <paramref name="value" />.</param>
+    [PublicAPI]
+    public void AppendLine(string? value, int startIndex, int count)
+    {
+        Append(value.AsSpan(startIndex, count));
+        Append(Environment.NewLine);
+    }
+
+    /// <summary>Appends a range of characters to the end of this builder.</summary>
+    /// <param name="value">The characters to append.</param>
+    /// <param name="startIndex">The index to start in <paramref name="value" />.</param>
+    /// <param name="charCount">The number of characters to read in <paramref name="value" />.</param>
+    [PublicAPI]
+    public void AppendLine(char[]? value, int startIndex, int charCount)
+    {
+        Append((ReadOnlySpan<char>)value.AsSpan(startIndex, charCount));
+        Append(Environment.NewLine);
+    }
 
     [PublicAPI]
+    public void AppendLine(char value)
+    {
+        Append([value]);
+        Append(Environment.NewLine);
+    }
+
+    /// <summary>Appends a character 0 or more times to the end of this builder.</summary>
+    /// <param name="value">The character to append.</param>
+    /// <param name="repeatCount">The number of times to append <paramref name="value" />.</param>
+    [PublicAPI]
+    public void AppendLine(char value, int repeatCount)
+    {
+        Append(value, repeatCount);
+        Append(Environment.NewLine);
+    }
+
+    /// <summary>Appends a string to the end of this builder.</summary>
+    /// <param name="value">The string to append.</param>
+    [PublicAPI]
     public void AppendLine(string? value)
+    {
+        Append(value.AsSpan());
+        Append(Environment.NewLine);
+    }
+
+    [PublicAPI]
+    public void AppendLine(char[]? value)
+    {
+        Append((ReadOnlySpan<char>)value.AsSpan());
+        Append(Environment.NewLine);
+    }
+
+    [PublicAPI]
+    public void AppendLine(Memory<char> value)
+    {
+        Append((ReadOnlySpan<char>)value.Span);
+        Append(Environment.NewLine);
+    }
+
+    [PublicAPI]
+    public void AppendLine(ReadOnlyMemory<char> value)
+    {
+        Append(value.Span);
+        Append(Environment.NewLine);
+    }
+
+    [PublicAPI]
+    public void AppendLine(Span<char> value)
+    {
+        Append((ReadOnlySpan<char>)value);
+        Append(Environment.NewLine);
+    }
+
+    [PublicAPI]
+    public void AppendLine(ReadOnlySpan<char> value)
+    {
+        Append(value);
+        Append(Environment.NewLine);
+    }
+
+    [PublicAPI]
+    public void AppendLine<T>(T value)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
     {
         Append(value);
         Append(Environment.NewLine);

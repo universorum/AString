@@ -17,21 +17,12 @@ internal sealed class DefaultFormatter<T> : ValueFormatter<T>
         }
 #endif
 
-        var str = value is IFormattable formattable
-            ? formattable.ToString(format.ToString(), formatProvider)
-            : Format(value, format, formatProvider);
-
-        if (str.Length > destination.Length)
-        {
-            charsWritten = 0;
-            return false;
-        }
-
-        charsWritten = str.Length;
-        str.AsSpan().CopyTo(destination);
-        return true;
+        charsWritten = 0;
+        return false;
     }
 
-    public override string Format(T value, ReadOnlySpan<char> _1, IFormatProvider? _2 = null) =>
-        value?.ToString() ?? string.Empty;
+    public override string Format(T value, string? format, IFormatProvider? formatProvider = null) =>
+        value is IFormattable formattable
+            ? formattable.ToString(format, formatProvider)
+            : value?.ToString() ?? string.Empty;
 }

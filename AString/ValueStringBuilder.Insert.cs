@@ -85,7 +85,7 @@ public partial struct ValueStringBuilder
             if (FormatterCache.TryFormat(value, span, out charsWritten, null)) { ros = span[..charsWritten]; }
             else
             {
-                var str = FormatterCache.Format(value, null);
+                var str = FormatterCache.Format(value);
                 ros          = str.AsSpan();
                 charsWritten = str.Length;
             }

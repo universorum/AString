@@ -22,9 +22,9 @@ public partial struct ValueStringAppender
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, _length);
         ArgumentOutOfRangeException.ThrowIfNegative(index);
 
-        var chunk = index / _fixedSize;
+        var chunk  = index / _fixedSize;
         var offset = index % _fixedSize;
-        var c1 = _buffers[chunk]![offset];
+        var c1     = _buffers[chunk]![offset];
 
         Span<char> chars = [c1, '\0'];
         if (index + 1 < _length)
@@ -54,9 +54,9 @@ public partial struct ValueStringAppender
         internal ValueStringAppenderRuneEnumerator(int fixedSize, char[]?[] buffers, int length)
         {
             _fixedSize = fixedSize;
-            _buffers = buffers;
-            _length = length;
-            _current = default;
+            _buffers   = buffers;
+            _length    = length;
+            _current   = default;
             _nextIndex = 0;
         }
 
@@ -78,9 +78,9 @@ public partial struct ValueStringAppender
         {
             if (_nextIndex >= _length) { return false; }
 
-            var chunk = _nextIndex / _fixedSize;
+            var chunk  = _nextIndex / _fixedSize;
             var offset = _nextIndex % _fixedSize;
-            var c1 = _buffers[chunk]![offset];
+            var c1     = _buffers[chunk]![offset];
 
             Span<char> chars = [c1, '\0'];
             if (_nextIndex + 1 < _length)
@@ -90,7 +90,7 @@ public partial struct ValueStringAppender
 
             if (!chars.TryGetRuneAt(0, out var rune)) { rune = Rune.ReplacementChar; }
 
-            _current = rune;
+            _current   =  rune;
             _nextIndex += rune.Utf16SequenceLength;
             return true;
         }
@@ -116,7 +116,7 @@ public partial struct ValueStringAppender
         /// <summary>Resets the current <see cref="ValueStringAppenderRuneEnumerator" /> instance to the beginning of the builder.</summary>
         void IEnumerator.Reset()
         {
-            _current = default;
+            _current   = default;
             _nextIndex = 0;
         }
     }

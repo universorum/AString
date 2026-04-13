@@ -33,7 +33,7 @@ public class ValueStringAppenderTestAppendLine
     {
         using var sb  = new ValueStringAppender();
         var       bcl = new StringBuilder();
-        sb.AppendLine(null);
+        sb.AppendLine((string?)null);
         bcl.AppendLine();
         await Assert.That(sb.ToString()).IsEqualTo(bcl.ToString());
     }

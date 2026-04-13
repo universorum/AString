@@ -6,5 +6,4 @@ internal record struct Segment
     public Range       Range         { get; init; }
     public int         ArgumentIndex { get; init; }
     public int         Alignment     { get; init; }
-    public Range       FormatRange   { get; init; }
 }

@@ -19,7 +19,7 @@ public class ValueStringAppenderTestRune
     public async Task EnumerateRunesAscii()
     {
         const string testString = "Hello, World!";
-        using var    a = new ValueStringAppender(testString);
+        using var    a          = new ValueStringAppender(testString);
         await Assert.That(ReconstructFromRunes(a.EnumerateRunes())).IsEqualTo(testString);
     }
 
@@ -37,10 +37,10 @@ public class ValueStringAppenderTestRune
     public async Task EnumerateRunesSurrogatePair()
     {
         const string testString = "a\U0001F6B5b"; // 'a', 🚵 (U+1F6B5, surrogate pair), 'b'
-        using var    a = new ValueStringAppender(testString);
+        using var    a          = new ValueStringAppender(testString);
 
         var runes = new List<Rune>();
-        var e = a.EnumerateRunes();
+        var e     = a.EnumerateRunes();
         while (e.MoveNext()) { runes.Add(e.Current); }
 
         await Assert.That(runes.Count).IsEqualTo(3); // a, 🚵, b
@@ -63,14 +63,14 @@ public class ValueStringAppenderTestRune
     public async Task EnumerateRunesReEnumerate()
     {
         const string testString = "Hello";
-        using var    a = new ValueStringAppender(testString);
+        using var    a          = new ValueStringAppender(testString);
 
         var pass1 = new List<Rune>();
-        var e1 = a.EnumerateRunes();
+        var e1    = a.EnumerateRunes();
         while (e1.MoveNext()) { pass1.Add(e1.Current); }
 
         var pass2 = new List<Rune>();
-        var e2 = a.EnumerateRunes();
+        var e2    = a.EnumerateRunes();
         while (e2.MoveNext()) { pass2.Add(e2.Current); }
 
         await Assert.That(pass1.Count).IsEqualTo(pass2.Count);
@@ -81,7 +81,7 @@ public class ValueStringAppenderTestRune
     public async Task EnumerateRunesIEnumerableGetEnumerator()
     {
         const string testString = "Hi";
-        using var    a = new ValueStringAppender(testString);
+        using var    a          = new ValueStringAppender(testString);
 
         var runes = new List<Rune>();
         foreach (var rune in a.EnumerateRunes()) { runes.Add(rune); }
@@ -95,13 +95,13 @@ public class ValueStringAppenderTestRune
     public async Task EnumerateRunesMatchesStringEnumerateRunes()
     {
         const string testString = "0123Test測試ẇord";
-        using var    a = new ValueStringAppender(testString);
+        using var    a          = new ValueStringAppender(testString);
 
         var expected = new List<Rune>();
         foreach (var rune in testString.EnumerateRunes()) { expected.Add(rune); }
 
         var actual = new List<Rune>();
-        var e = a.EnumerateRunes();
+        var e      = a.EnumerateRunes();
         while (e.MoveNext()) { actual.Add(e.Current); }
 
         await Assert.That(actual.Count).IsEqualTo(expected.Count);
@@ -123,7 +123,7 @@ public class ValueStringAppenderTestRune
     public async Task GetRuneAtSurrogatePair()
     {
         const string text = "\U0001F6B5"; // 🚵, encoded as surrogate pair
-        using var    a = new ValueStringAppender(text);
+        using var    a    = new ValueStringAppender(text);
         await Assert.That(a.GetRuneAt(0)).IsEqualTo(new Rune(0x1F6B5));
     }
 
@@ -131,7 +131,7 @@ public class ValueStringAppenderTestRune
     public async Task GetRuneAtSurrogatePairSecondChar()
     {
         const string text = "a\U0001F6B5b";
-        using var    a = new ValueStringAppender(text);
+        using var    a    = new ValueStringAppender(text);
         await Assert.That(a.GetRuneAt(1)).IsEqualTo(new Rune(0x1F6B5));
         await Assert.That(a.GetRuneAt(3)).IsEqualTo(new Rune('b'));
     }
@@ -160,7 +160,7 @@ public class ValueStringAppenderTestRune
     public void GetRuneAtLoneSurrogateThrows()
     {
         var       text = new string(new[] { '\uD83D' }); // lone high surrogate
-        using var a = new ValueStringAppender(text);
+        using var a    = new ValueStringAppender(text);
         Assert.Throws<ArgumentException>(() => a.GetRuneAt(0));
     }
 
@@ -178,7 +178,7 @@ public class ValueStringAppenderTestRune
     public async Task TryGetRuneAtSurrogatePair()
     {
         const string text = "\U0001F6B5"; // 🚵
-        using var    a = new ValueStringAppender(text);
+        using var    a    = new ValueStringAppender(text);
         await Assert.That(a.TryGetRuneAt(0, out var rune)).IsTrue();
         await Assert.That(rune).IsEqualTo(new Rune(0x1F6B5));
     }
@@ -187,7 +187,7 @@ public class ValueStringAppenderTestRune
     public async Task TryGetRuneAtLoneSurrogate()
     {
         var       text = new string(new[] { '\uD83D' }); // lone high surrogate
-        using var a = new ValueStringAppender(text);
+        using var a    = new ValueStringAppender(text);
         await Assert.That(a.TryGetRuneAt(0, out _)).IsFalse();
     }
 
@@ -215,7 +215,7 @@ public class ValueStringAppenderTestRune
     public async Task TryGetRuneAtAllPositions()
     {
         const string text = "AB\U0001F6B5C"; // A, B, 🚵 (2 chars), C
-        using var    a = new ValueStringAppender(text);
+        using var    a    = new ValueStringAppender(text);
 
         await Assert.That(a.TryGetRuneAt(0, out var r0)).IsTrue();
         await Assert.That(r0).IsEqualTo(new Rune('A'));
@@ -242,7 +242,7 @@ public class ValueStringAppenderTestRune
         // Position the high surrogate at the last slot of chunk 0 (chunkSize - 1),
         // low surrogate at the first slot of chunk 1 (chunkSize).
         var prefix = new string('A', chunkSize - 1); // fills chunk 0 up to last slot
-        var text = prefix + "\U0001F6B5" + "END";  // pair straddles chunk boundary
+        var text   = prefix + "\U0001F6B5" + "END";  // pair straddles chunk boundary
 
         using var a = new ValueStringAppender(text);
 
@@ -254,8 +254,8 @@ public class ValueStringAppenderTestRune
     [Test]
     public async Task EnumerateRunesCrossChunkBoundary()
     {
-        var chunkSize = ValueStringAppender.DefaultFixedSize;
-        var prefix = new string('A', chunkSize - 1);
+        var chunkSize  = ValueStringAppender.DefaultFixedSize;
+        var prefix     = new string('A', chunkSize - 1);
         var testString = prefix + "\U0001F6B5" + "END";
 
         using var a = new ValueStringAppender(testString);
@@ -264,7 +264,7 @@ public class ValueStringAppenderTestRune
         foreach (var rune in testString.EnumerateRunes()) { expected.Add(rune); }
 
         var actual = new List<Rune>();
-        var e = a.EnumerateRunes();
+        var e      = a.EnumerateRunes();
         while (e.MoveNext()) { actual.Add(e.Current); }
 
         await Assert.That(actual.Count).IsEqualTo(expected.Count);

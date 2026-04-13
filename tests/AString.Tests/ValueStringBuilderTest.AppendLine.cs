@@ -33,7 +33,7 @@ public class ValueStringBuilderTestAppendLine
     {
         using var sb  = new ValueStringBuilder();
         var       bcl = new StringBuilder();
-        sb.AppendLine(null);
+        sb.AppendLine((string?)null);
         bcl.AppendLine();
         await Assert.That(sb.ToString()).IsEqualTo(bcl.ToString());
     }
@@ -76,7 +76,7 @@ public class ValueStringBuilderTestAppendLine
     [Test]
     public async Task AppendLineInterpolatedWithProvider()
     {
-        using var sb = new ValueStringBuilder();
+        using var sb    = new ValueStringBuilder();
         var       value = 3.14;
         sb.AppendLine(CultureInfo.InvariantCulture, $"pi={value:F2}");
         await Assert.That(sb.ToString()).IsEqualTo($"pi=3.14{Environment.NewLine}");

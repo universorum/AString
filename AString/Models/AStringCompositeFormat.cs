@@ -119,7 +119,7 @@ public class AStringCompositeFormat
                     var sender = new ParameterSender(ref builder,
                         null,
                         segment.Alignment,
-                        Format.AsMemory(segment.FormatRange));
+                        Format.AsMemory(segment.Range));
 
                     try { selector.Invoke(ref sender, segment.ArgumentIndex, state); }
                     catch (Exception ex)
@@ -147,16 +147,16 @@ public class AStringCompositeFormat
             int width,
             ReadOnlyMemory<char> format)
         {
-            _formatProvider = formatProvider;
-            _width = width;
-            _format = format;
+            _formatProvider     = formatProvider;
+            _width              = width;
+            _format             = format;
             _valueStringBuilder = ref valueStringBuilder;
         }
 
         [PublicAPI]
         public void Send<T>(T? value)
         {
-            _valueStringBuilder.AppendFormatInternal(_formatProvider, value, _width, _format.Span);
+            _valueStringBuilder.AppendFormatInternal(value, _width, _format.Span, null, _formatProvider);
         }
     }
 

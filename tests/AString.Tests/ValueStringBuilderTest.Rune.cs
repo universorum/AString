@@ -19,7 +19,7 @@ public class ValueStringBuilderTestRune
     public async Task EnumerateRunesAscii()
     {
         const string testString = "Hello, World!";
-        using var    a = new ValueStringBuilder(testString);
+        using var    a          = new ValueStringBuilder(testString);
         await Assert.That(ReconstructFromRunes(a.EnumerateRunes())).IsEqualTo(testString);
     }
 
@@ -37,10 +37,10 @@ public class ValueStringBuilderTestRune
     public async Task EnumerateRunesSurrogatePair()
     {
         const string testString = "a\U0001F6B5b"; // 'a', 🚵 (U+1F6B5, surrogate pair), 'b'
-        using var    a = new ValueStringBuilder(testString);
+        using var    a          = new ValueStringBuilder(testString);
 
         var runes = new List<Rune>();
-        var e = a.EnumerateRunes();
+        var e     = a.EnumerateRunes();
         while (e.MoveNext()) { runes.Add(e.Current); }
 
         await Assert.That(runes.Count).IsEqualTo(3); // a, 🚵, b
@@ -63,14 +63,14 @@ public class ValueStringBuilderTestRune
     public async Task EnumerateRunesReEnumerate()
     {
         const string testString = "Hello";
-        using var    a = new ValueStringBuilder(testString);
+        using var    a          = new ValueStringBuilder(testString);
 
         var pass1 = new List<Rune>();
-        var e1 = a.EnumerateRunes();
+        var e1    = a.EnumerateRunes();
         while (e1.MoveNext()) { pass1.Add(e1.Current); }
 
         var pass2 = new List<Rune>();
-        var e2 = a.EnumerateRunes();
+        var e2    = a.EnumerateRunes();
         while (e2.MoveNext()) { pass2.Add(e2.Current); }
 
         await Assert.That(pass1.Count).IsEqualTo(pass2.Count);
@@ -81,7 +81,7 @@ public class ValueStringBuilderTestRune
     public async Task EnumerateRunesIEnumerableGetEnumerator()
     {
         const string testString = "Hi";
-        using var    a = new ValueStringBuilder(testString);
+        using var    a          = new ValueStringBuilder(testString);
 
         var runes = new List<Rune>();
         foreach (var rune in a.EnumerateRunes()) { runes.Add(rune); }
@@ -95,13 +95,13 @@ public class ValueStringBuilderTestRune
     public async Task EnumerateRunesMatchesStringEnumerateRunes()
     {
         const string testString = "0123Test測試ẇord";
-        using var    a = new ValueStringBuilder(testString);
+        using var    a          = new ValueStringBuilder(testString);
 
         var expected = new List<Rune>();
         foreach (var rune in testString.EnumerateRunes()) { expected.Add(rune); }
 
         var actual = new List<Rune>();
-        var e = a.EnumerateRunes();
+        var e      = a.EnumerateRunes();
         while (e.MoveNext()) { actual.Add(e.Current); }
 
         await Assert.That(actual.Count).IsEqualTo(expected.Count);
@@ -123,7 +123,7 @@ public class ValueStringBuilderTestRune
     public async Task GetRuneAtSurrogatePair()
     {
         const string text = "\U0001F6B5"; // 🚵, encoded as surrogate pair
-        using var    a = new ValueStringBuilder(text);
+        using var    a    = new ValueStringBuilder(text);
         await Assert.That(a.GetRuneAt(0)).IsEqualTo(new Rune(0x1F6B5));
     }
 
@@ -133,7 +133,7 @@ public class ValueStringBuilderTestRune
         // Accessing the second surrogate directly should also return the full Rune
         // since TryGetRuneAt on a low surrogate returns false, GetRuneAt throws
         const string text = "a\U0001F6B5b";
-        using var    a = new ValueStringBuilder(text);
+        using var    a    = new ValueStringBuilder(text);
         await Assert.That(a.GetRuneAt(1)).IsEqualTo(new Rune(0x1F6B5));
         await Assert.That(a.GetRuneAt(3)).IsEqualTo(new Rune('b'));
     }
@@ -163,7 +163,7 @@ public class ValueStringBuilderTestRune
     {
         // A lone high surrogate cannot be decoded as a valid Rune
         var       text = new string(new[] { '\uD83D' });
-        using var a = new ValueStringBuilder(text);
+        using var a    = new ValueStringBuilder(text);
         Assert.Throws<ArgumentException>(() => a.GetRuneAt(0));
     }
 
@@ -181,7 +181,7 @@ public class ValueStringBuilderTestRune
     public async Task TryGetRuneAtSurrogatePair()
     {
         const string text = "\U0001F6B5"; // 🚵
-        using var    a = new ValueStringBuilder(text);
+        using var    a    = new ValueStringBuilder(text);
         await Assert.That(a.TryGetRuneAt(0, out var rune)).IsTrue();
         await Assert.That(rune).IsEqualTo(new Rune(0x1F6B5));
     }
@@ -190,7 +190,7 @@ public class ValueStringBuilderTestRune
     public async Task TryGetRuneAtLoneSurrogate()
     {
         var       text = new string(new[] { '\uD83D' }); // lone high surrogate
-        using var a = new ValueStringBuilder(text);
+        using var a    = new ValueStringBuilder(text);
         await Assert.That(a.TryGetRuneAt(0, out _)).IsFalse();
     }
 
@@ -218,7 +218,7 @@ public class ValueStringBuilderTestRune
     public async Task TryGetRuneAtAllPositions()
     {
         const string text = "AB\U0001F6B5C"; // A, B, 🚵 (2 chars), C
-        using var    a = new ValueStringBuilder(text);
+        using var    a    = new ValueStringBuilder(text);
 
         await Assert.That(a.TryGetRuneAt(0, out var r0)).IsTrue();
         await Assert.That(r0).IsEqualTo(new Rune('A'));

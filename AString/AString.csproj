@@ -6,7 +6,7 @@
         <WarningsAsErrors>nullable</WarningsAsErrors>
         <RootNamespace>Astra.Text</RootNamespace>
         <LangVersion>latest</LangVersion>
-        <TargetFrameworks>netstandard2.0;netstandard2.1;net8.0</TargetFrameworks>
+        <TargetFrameworks>netstandard2.0;netstandard2.1;net8.0;net9.0</TargetFrameworks>
         <AssemblyName>AString</AssemblyName>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Version>0.9.9-beta.1</Version>

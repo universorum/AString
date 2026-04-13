@@ -83,15 +83,22 @@ public partial struct ValueStringAppender
 
         #region AppendFormatted T
 
-        public void AppendFormatted<T>(T value) => AppendFormatted(value, 0, default);
+        public void AppendFormatted<T>(T value) => AppendFormatted(value, 0, null);
+
+        public void AppendFormatted<T>(T value, string format) => AppendFormatted(value, 0, format);
 
         public void AppendFormatted<T>(T value, ReadOnlySpan<char> format) => AppendFormatted(value, 0, format);
 
-        public void AppendFormatted<T>(T value, int alignment) => AppendFormatted(value, alignment, default);
+        public void AppendFormatted<T>(T value, int alignment) => AppendFormatted(value, alignment, null);
+
+        public void AppendFormatted<T>(T value, int alignment, string? format)
+        {
+            _stringBuilder.AppendFormatInternal(value, alignment, format.AsSpan(), format, _provider);
+        }
 
         public void AppendFormatted<T>(T value, int alignment, ReadOnlySpan<char> format)
         {
-            _stringBuilder.AppendFormatInternal(_provider, value, alignment, format);
+            _stringBuilder.AppendFormatInternal(value, alignment, format, null, _provider);
         }
 
         #endregion

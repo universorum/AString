@@ -264,10 +264,10 @@ public partial struct ValueStringAppender : IDisposable
         if (builder.Length != _length) { return false; }
 
 #if NET8_0_OR_GREATER
-        using var self = GetChunks();
+        using var self  = GetChunks();
         var       other = builder.GetChunks();
 
-        ReadOnlySpan<char> selfSpan = default;
+        ReadOnlySpan<char> selfSpan  = default;
         ReadOnlySpan<char> otherSpan = default;
 
         while (true)
@@ -289,7 +289,7 @@ public partial struct ValueStringAppender : IDisposable
             var len = Math.Min(selfSpan.Length, otherSpan.Length);
             if (!selfSpan[..len].SequenceEqual(otherSpan[..len])) { return false; }
 
-            selfSpan = selfSpan[len..];
+            selfSpan  = selfSpan[len..];
             otherSpan = otherSpan[len..];
         }
 
@@ -489,6 +489,10 @@ public partial struct ValueStringAppender : IDisposable
         ArrayPool<char[]?>.Shared.Return(_buffers, CleanBufferWhenReleased);
     }
 
-    private static int GetGuestLength<T>() =>
-        typeof(T).IsValueType ? Math.Min(GuestStringLength, Unsafe.SizeOf<T>()) * 8 : GuestStringLength;
+    private static int GetGuestLength<T>()
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+        =>
+            typeof(T).IsValueType ? Math.Min(GuestStringLength, Unsafe.SizeOf<T>()) * 8 : GuestStringLength;
 }

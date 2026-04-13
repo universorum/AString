@@ -204,13 +204,13 @@ public partial struct ValueStringBuilder : IDisposable
         var str = builder.ToString();
         return Equals(str);
 #else
-        var span = _buffer.AsSpan(0, builder.Length);
+        var span   = _buffer.AsSpan(0, builder.Length);
         var chunks = builder.GetChunks();
 
         while (chunks.MoveNext())
         {
             var memory = chunks.Current;
-            var size = Math.Min(span.Length, memory.Length);
+            var size   = Math.Min(span.Length, memory.Length);
 
             if (!memory.Span[..size].SequenceEqual(span[..size])) { return false; }
 
@@ -359,8 +359,12 @@ public partial struct ValueStringBuilder : IDisposable
         ArrayPool<char>.Shared.Return(_buffer, CleanBufferWhenReleased);
     }
 
-    private static int GetGuestLength<T>() =>
-        typeof(T).IsValueType ? Math.Min(GuestStringLength, Unsafe.SizeOf<T>()) * 8 : GuestStringLength;
+    private static int GetGuestLength<T>()
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+        =>
+            typeof(T).IsValueType ? Math.Min(GuestStringLength, Unsafe.SizeOf<T>()) * 8 : GuestStringLength;
 
     private static int SmallestPowerOf2(int n)
     {

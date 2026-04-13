@@ -2,26 +2,18 @@ namespace Astra.Text.Formatters;
 
 internal sealed class DefaultFormattableFormatter<T> : ValueFormatter<T> where T : IFormattable
 {
-    public static DefaultFormattableFormatter<T> Instance { get;  } = new();
+    public static DefaultFormattableFormatter<T> Instance { get; } = new();
 
-    public override bool TryFormat(T value,
-        Span<char> destination,
+    public override bool TryFormat(T _1,
+        Span<char> _2,
         out int charsWritten,
-        ReadOnlySpan<char> format,
-        IFormatProvider? formatProvider = null)
+        ReadOnlySpan<char> _3,
+        IFormatProvider? _4 = null)
     {
-        var str = Format(value, format, formatProvider);
-        if (str.Length > destination.Length)
-        {
-            charsWritten = 0;
-            return false;
-        }
-
-        charsWritten = str.Length;
-        str.AsSpan().CopyTo(destination);
-        return true;
+        charsWritten = 0;
+        return false;
     }
 
-    public override string Format(T value, ReadOnlySpan<char> format, IFormatProvider? formatProvider = null) =>
-        value.ToString(format.ToString(), formatProvider);
+    public override string Format(T value, string? format, IFormatProvider? formatProvider = null) =>
+        value.ToString(format, formatProvider);
 }

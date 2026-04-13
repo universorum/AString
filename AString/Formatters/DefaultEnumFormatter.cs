@@ -92,9 +92,11 @@ internal sealed class DefaultEnumFormatter<T> : ValueFormatter<T> where T : Enum
         return result;
     }
 
-    public override string Format(T value, ReadOnlySpan<char> format, IFormatProvider? formatProvider = null)
+    public override string Format(T value, string? format, IFormatProvider? formatProvider = null)
     {
         if (formatProvider != null) { throw new NotImplementedException(); }
+
+        format ??= string.Empty;
 
         if (format.Length > 1) { throw new ArgumentException("Format_InvalidEnumFormatSpecification"); } // TODO
 
@@ -108,7 +110,7 @@ internal sealed class DefaultEnumFormatter<T> : ValueFormatter<T> where T : Enum
 
         if (!IsFlag) { throw new FormatException("Format_InvalidEnumFormatSpecification"); } // TODO
 
-        str = value.ToString(format.ToString());
+        str = value.ToString(format);
 
         var dict = new Dictionary<(T, char), string>();
         foreach (var (k, v) in _names) { dict.Add(k, v); }

@@ -29,10 +29,7 @@ internal static class StringExtensions
 
                 unsafe
                 {
-                    fixed (char* src = span)
-                    {
-                        return new string(src, 0, span.Length);
-                    }
+                    fixed (char* src = span) { return new string(src, 0, span.Length); }
                 }
             }
             finally { ArrayPool<char>.Shared.Return(array); }

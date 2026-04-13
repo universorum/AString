@@ -24,8 +24,6 @@ internal sealed class DefaultNullableFormatter<TFormattable> : ValueFormatter<TF
         return true;
     }
 
-    public override string Format(TFormattable? value,
-        ReadOnlySpan<char> format,
-        IFormatProvider? formatProvider = null) =>
+    public override string Format(TFormattable? value, string? format, IFormatProvider? formatProvider = null) =>
         !value.HasValue ? string.Empty : InnerFormatter.Format(value.Value, format, formatProvider);
 }

@@ -22,7 +22,7 @@ internal static class EncodingExtensions
 
         public int GetByteCount(ReadOnlySpan<char> span)
         {
-            if(span.IsEmpty) { return 0; }
+            if (span.IsEmpty) { return 0; }
 
             unsafe
             {

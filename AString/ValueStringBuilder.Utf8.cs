@@ -11,9 +11,9 @@ public partial struct ValueStringBuilder
     {
         var charSpan = AsSpan();
         var length   = Encoding.UTF8.GetByteCount(charSpan);
-        if(length == 0) { return []; }
+        if (length == 0) { return []; }
 
-        Span<byte> span     = stackalloc byte[length];
+        Span<byte> span = stackalloc byte[length];
         Encoding.UTF8.GetBytes(charSpan, span);
 
         return span.ToArray();
@@ -23,7 +23,7 @@ public partial struct ValueStringBuilder
     public void AppendUft8(ReadOnlySpan<byte> uft8)
     {
         var size = Encoding.UTF8.GetCharCount(uft8);
-        if(size == 0) { return; }
+        if (size == 0) { return; }
 
         Span<char> span = stackalloc char[size];
         Encoding.UTF8.GetChars(uft8, span);
@@ -114,10 +114,10 @@ public partial struct ValueStringBuilder
     {
         var charSpan = AsSpan();
         var length   = Encoding.UTF8.GetByteCount(charSpan);
-        if(length == 0) { return; }
+        if (length == 0) { return; }
 
-        var buffer   = ArrayPool<byte>.Shared.Rent(length);
-        var memory   = buffer.AsMemory(0, length);
+        var buffer = ArrayPool<byte>.Shared.Rent(length);
+        var memory = buffer.AsMemory(0, length);
         Encoding.UTF8.GetBytes(charSpan, memory.Span);
 
         await stream.WriteAsync(memory, cancellationToken).ConfigureAwait(false);

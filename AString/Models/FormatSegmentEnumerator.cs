@@ -88,7 +88,7 @@ internal ref struct FormatSegmentEnumerator(ReadOnlySpan<char> format)
                         Type          = SegmentType.Argument,
                         ArgumentIndex = argumentIndex,
                         Alignment     = alignment,
-                        FormatRange   = fmt
+                        Range         = fmt
                     };
                     return true;
                 }

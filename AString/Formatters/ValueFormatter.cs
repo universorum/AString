@@ -1,12 +1,21 @@
 namespace Astra.Text.Formatters;
 
 public abstract class ValueFormatter<T>
+#if NET9_0_OR_GREATER
+    where T : allows ref struct
+#endif
 {
+    public virtual bool TryGetStringLength(T value, out int length)
+    {
+        length = 0;
+        return false;
+    }
+
     public abstract bool TryFormat(T value,
         Span<char> destination,
         out int charsWritten,
         ReadOnlySpan<char> format,
         IFormatProvider? formatProvider = null);
 
-    public abstract string Format(T value, ReadOnlySpan<char> format, IFormatProvider? formatProvider = null);
+    public abstract string Format(T value, string? format, IFormatProvider? formatProvider = null);
 }

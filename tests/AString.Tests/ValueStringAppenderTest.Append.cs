@@ -319,7 +319,7 @@ public class ValueStringAppenderTestAppend
     public async Task AppendNullCharArray()
     {
         using var sb = new ValueStringAppender("test");
-        sb.Append(null);
+        sb.Append((char[]?)null);
         await Assert.That(sb.ToString()).IsEqualTo("test");
     }
 

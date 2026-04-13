@@ -9,7 +9,7 @@ public static class StringExtension
 #if !NET8_0_OR_GREATER
         public void CopyTo(Span<char> destination) { self.AsSpan().CopyTo(destination); }
 #endif
-#if !NET10_0_OR_GREATER
+#if !NET9_0_OR_GREATER
         public static string Concat<T>(ReadOnlySpan<T> values) => string.Concat(values.ToArray());
 
         public static string Join<T>(char separator, ReadOnlySpan<T> values) =>

@@ -223,7 +223,7 @@ public class AStringCompositeFormatTest
     [Test]
     public async Task CreateString_EmptyFormat_ReturnsEmpty()
     {
-        var cf = new AStringCompositeFormat("");
+        var cf     = new AStringCompositeFormat("");
         var result = cf.CreateString(static (ref s, i, a) => s.Send(a[i]), Array.Empty<string?>());
         await Assert.That(result).IsEqualTo(string.Empty);
     }
@@ -231,7 +231,7 @@ public class AStringCompositeFormatTest
     [Test]
     public async Task CreateString_LiteralOnly_ReturnsLiteral()
     {
-        var cf = new AStringCompositeFormat("hello world");
+        var cf     = new AStringCompositeFormat("hello world");
         var result = cf.CreateString(static (ref s, i, a) => s.Send(a[i]), Array.Empty<string?>());
         await Assert.That(result).IsEqualTo("hello world");
     }
@@ -241,7 +241,7 @@ public class AStringCompositeFormatTest
     [Test]
     public async Task CreateString_EscapedOpenBracket_ProducesOpenBrace()
     {
-        var cf = new AStringCompositeFormat("{{");
+        var cf     = new AStringCompositeFormat("{{");
         var result = cf.CreateString(static (ref s, i, a) => s.Send(a[i]), Array.Empty<string?>());
         await Assert.That(result).IsEqualTo("{");
     }
@@ -251,7 +251,7 @@ public class AStringCompositeFormatTest
     [Test]
     public async Task CreateString_EscapedCloseBracket_ProducesCloseBrace()
     {
-        var cf = new AStringCompositeFormat("}}");
+        var cf     = new AStringCompositeFormat("}}");
         var result = cf.CreateString(static (ref s, i, a) => s.Send(a[i]), Array.Empty<string?>());
         await Assert.That(result).IsEqualTo("}");
     }
@@ -261,7 +261,7 @@ public class AStringCompositeFormatTest
     [Test]
     public async Task CreateString_SingleArgument_InsertsValue()
     {
-        var cf = new AStringCompositeFormat("Hello {0}!");
+        var cf     = new AStringCompositeFormat("Hello {0}!");
         var result = cf.CreateString(StringArraySelector, new[] { "World" });
         await Assert.That(result).IsEqualTo("Hello World!");
     }
@@ -269,7 +269,7 @@ public class AStringCompositeFormatTest
     [Test]
     public async Task CreateString_TwoArguments_InsertsValues()
     {
-        var cf = new AStringCompositeFormat("{0} + {1}");
+        var cf     = new AStringCompositeFormat("{0} + {1}");
         var result = cf.CreateString(IntArraySelector, new[] { 1, 2 });
         await Assert.That(result).IsEqualTo("1 + 2");
     }
@@ -277,7 +277,7 @@ public class AStringCompositeFormatTest
     [Test]
     public async Task CreateString_ThreeArguments_InsertsValues()
     {
-        var cf = new AStringCompositeFormat("{0}, {1}, {2}");
+        var cf     = new AStringCompositeFormat("{0}, {1}, {2}");
         var result = cf.CreateString(StringArraySelector, new[] { "a", "b", "c" });
         await Assert.That(result).IsEqualTo("a, b, c");
     }
@@ -285,7 +285,7 @@ public class AStringCompositeFormatTest
     [Test]
     public async Task CreateString_RepeatedArgument_InsertsTwice()
     {
-        var cf = new AStringCompositeFormat("{0} = {0}");
+        var cf     = new AStringCompositeFormat("{0} = {0}");
         var result = cf.CreateString(IntArraySelector, new[] { 42 });
         await Assert.That(result).IsEqualTo("42 = 42");
     }
@@ -295,7 +295,7 @@ public class AStringCompositeFormatTest
     [Test]
     public async Task CreateString_NullArgument_ProducesEmpty()
     {
-        var cf = new AStringCompositeFormat("[{0}]");
+        var cf     = new AStringCompositeFormat("[{0}]");
         var result = cf.CreateString(StringArraySelector, new string?[] { null });
         await Assert.That(result).IsEqualTo("[]");
     }
@@ -305,8 +305,8 @@ public class AStringCompositeFormatTest
     [Test]
     public async Task CreateString_FormatSpecifier_AppliesFormat()
     {
-        var cf = new AStringCompositeFormat("{0:X}");
-        var result = cf.CreateString(IntArraySelector, new[] { 255 });
+        var cf       = new AStringCompositeFormat("{0:X}");
+        var result   = cf.CreateString(IntArraySelector, new[] { 255 });
         var expected = string.Format("{0:X}", 255);
         await Assert.That(result).IsEqualTo(expected);
     }
@@ -314,8 +314,8 @@ public class AStringCompositeFormatTest
     [Test]
     public async Task CreateString_FormatSpecifierF2_AppliesFormat()
     {
-        var cf = new AStringCompositeFormat("{0:F2}");
-        var result = cf.CreateString(DoubleArraySelector, new[] { Math.PI });
+        var cf       = new AStringCompositeFormat("{0:F2}");
+        var result   = cf.CreateString(DoubleArraySelector, new[] { Math.PI });
         var expected = string.Format("{0:F2}", Math.PI);
         await Assert.That(result).IsEqualTo(expected);
     }
@@ -325,8 +325,8 @@ public class AStringCompositeFormatTest
     [Test]
     public async Task CreateString_PositiveAlignment_RightAligns()
     {
-        var cf = new AStringCompositeFormat("{0,5}");
-        var result = cf.CreateString(IntArraySelector, new[] { 42 });
+        var cf       = new AStringCompositeFormat("{0,5}");
+        var result   = cf.CreateString(IntArraySelector, new[] { 42 });
         var expected = string.Format("{0,5}", 42);
         await Assert.That(result).IsEqualTo(expected);
     }
@@ -334,8 +334,8 @@ public class AStringCompositeFormatTest
     [Test]
     public async Task CreateString_NegativeAlignment_LeftAligns()
     {
-        var cf = new AStringCompositeFormat("{0,-5}");
-        var result = cf.CreateString(IntArraySelector, new[] { 42 });
+        var cf       = new AStringCompositeFormat("{0,-5}");
+        var result   = cf.CreateString(IntArraySelector, new[] { 42 });
         var expected = string.Format("{0,-5}", 42);
         await Assert.That(result).IsEqualTo(expected);
     }
@@ -343,8 +343,8 @@ public class AStringCompositeFormatTest
     [Test]
     public async Task CreateString_AlignmentAndFormatSpecifier_AppliesBoth()
     {
-        var cf = new AStringCompositeFormat("{0,10:F2}");
-        var result = cf.CreateString(DoubleArraySelector, new[] { Math.PI });
+        var cf       = new AStringCompositeFormat("{0,10:F2}");
+        var result   = cf.CreateString(DoubleArraySelector, new[] { Math.PI });
         var expected = string.Format("{0,10:F2}", Math.PI);
         await Assert.That(result).IsEqualTo(expected);
     }
@@ -355,7 +355,7 @@ public class AStringCompositeFormatTest
     public async Task CreateString_MixedEscapesAndArguments_ProducesCorrectOutput()
     {
         // {{{0}}} → {<value>}
-        var cf = new AStringCompositeFormat("{{{0}}}");
+        var cf     = new AStringCompositeFormat("{{{0}}}");
         var result = cf.CreateString(StringArraySelector, new[] { "x" });
         await Assert.That(result).IsEqualTo("{x}");
     }
@@ -364,8 +364,8 @@ public class AStringCompositeFormatTest
     public async Task CreateString_AllSegmentTypes_ProducesCorrectOutput()
     {
         // literal + {{ + arg + }} + literal
-        var cf = new AStringCompositeFormat("pre{{mid{0}end}}post");
-        var result = cf.CreateString(StringArraySelector, new[] { "val" });
+        var cf       = new AStringCompositeFormat("pre{{mid{0}end}}post");
+        var result   = cf.CreateString(StringArraySelector, new[] { "val" });
         var expected = string.Format("pre{{mid{0}end}}post", "val");
         await Assert.That(result).IsEqualTo(expected);
     }
@@ -375,8 +375,8 @@ public class AStringCompositeFormatTest
     [Test]
     public async Task CreateString_UnicodeInFormat_HandledCorrectly()
     {
-        var cf = new AStringCompositeFormat("\u30cf\u30fc\u30c8: {0}");
-        var result = cf.CreateString(StringArraySelector, new[] { "\u2764" });
+        var cf       = new AStringCompositeFormat("\u30cf\u30fc\u30c8: {0}");
+        var result   = cf.CreateString(StringArraySelector, new[] { "\u2764" });
         var expected = "\u30cf\u30fc\u30c8: \u2764";
         await Assert.That(result).IsEqualTo(expected);
     }
@@ -413,7 +413,7 @@ public class AStringCompositeFormatTest
     [Test]
     public async Task CreateUtf8Array_EmptyFormat_ReturnsEmptyArray()
     {
-        var cf = new AStringCompositeFormat("");
+        var cf     = new AStringCompositeFormat("");
         var result = cf.CreateUtf8Array(static (ref s, i, a) => s.Send(a[i]), Array.Empty<string?>());
         await Assert.That(result).IsEmpty();
     }
@@ -421,8 +421,8 @@ public class AStringCompositeFormatTest
     [Test]
     public async Task CreateUtf8Array_LiteralOnly_ReturnsUtf8Bytes()
     {
-        var cf = new AStringCompositeFormat("hello");
-        var result = cf.CreateUtf8Array(static (ref s, i, a) => s.Send(a[i]), Array.Empty<string?>());
+        var cf       = new AStringCompositeFormat("hello");
+        var result   = cf.CreateUtf8Array(static (ref s, i, a) => s.Send(a[i]), Array.Empty<string?>());
         var expected = "hello"u8.ToArray();
         await Assert.That(result).IsEquivalentTo(expected);
     }
@@ -430,9 +430,9 @@ public class AStringCompositeFormatTest
     [Test]
     public async Task CreateUtf8Array_SingleArgument_MatchesCreateString()
     {
-        var cf = new AStringCompositeFormat("Hello {0}!");
-        var str = cf.CreateString(StringArraySelector, new[] { "World" });
-        var utf8 = cf.CreateUtf8Array(StringArraySelector, new[] { "World" });
+        var cf      = new AStringCompositeFormat("Hello {0}!");
+        var str     = cf.CreateString(StringArraySelector, new[] { "World" });
+        var utf8    = cf.CreateUtf8Array(StringArraySelector, new[] { "World" });
         var encoded = Encoding.UTF8.GetBytes(str);
         await Assert.That(utf8).IsEquivalentTo(encoded);
     }
@@ -440,9 +440,9 @@ public class AStringCompositeFormatTest
     [Test]
     public async Task CreateUtf8Array_EscapedBraces_MatchesCreateString()
     {
-        var cf = new AStringCompositeFormat("{{{0}}}");
-        var str = cf.CreateString(StringArraySelector, new[] { "val" });
-        var utf8 = cf.CreateUtf8Array(StringArraySelector, new[] { "val" });
+        var cf      = new AStringCompositeFormat("{{{0}}}");
+        var str     = cf.CreateString(StringArraySelector, new[] { "val" });
+        var utf8    = cf.CreateUtf8Array(StringArraySelector, new[] { "val" });
         var encoded = Encoding.UTF8.GetBytes(str);
         await Assert.That(utf8).IsEquivalentTo(encoded);
     }
@@ -450,10 +450,10 @@ public class AStringCompositeFormatTest
     [Test]
     public async Task CreateUtf8Array_UnicodeContent_MatchesCreateString()
     {
-        var cf = new AStringCompositeFormat("\u30cf\u30fc\u30c8: {0}");
-        var arg = "\uD83D\uDC4D"; // thumbs-up emoji (surrogate pair)
-        var str = cf.CreateString(StringArraySelector, new[] { arg });
-        var utf8 = cf.CreateUtf8Array(StringArraySelector, new[] { arg });
+        var cf      = new AStringCompositeFormat("\u30cf\u30fc\u30c8: {0}");
+        var arg     = "\uD83D\uDC4D"; // thumbs-up emoji (surrogate pair)
+        var str     = cf.CreateString(StringArraySelector, new[] { arg });
+        var utf8    = cf.CreateUtf8Array(StringArraySelector, new[] { arg });
         var encoded = Encoding.UTF8.GetBytes(str);
         await Assert.That(utf8).IsEquivalentTo(encoded);
     }
@@ -461,9 +461,9 @@ public class AStringCompositeFormatTest
     [Test]
     public async Task CreateUtf8Array_AlignmentAndFormat_MatchesCreateString()
     {
-        var cf = new AStringCompositeFormat("{0,10:F2} {1,-5:X}");
-        var str = cf.CreateString(IntArraySelector, new[] { 255, 255 });
-        var utf8 = cf.CreateUtf8Array(IntArraySelector, new[] { 255, 255 });
+        var cf      = new AStringCompositeFormat("{0,10:F2} {1,-5:X}");
+        var str     = cf.CreateString(IntArraySelector, new[] { 255, 255 });
+        var utf8    = cf.CreateUtf8Array(IntArraySelector, new[] { 255, 255 });
         var encoded = Encoding.UTF8.GetBytes(str);
         await Assert.That(utf8).IsEquivalentTo(encoded);
     }

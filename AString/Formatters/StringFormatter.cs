@@ -4,6 +4,12 @@ internal sealed class DefaultStringFormatter : ValueFormatter<string>
 {
     public static DefaultStringFormatter Instance { get; } = new();
 
+    public override bool TryGetStringLength(string? value, out int length)
+    {
+        length = value?.Length ?? 0;
+        return true;
+    }
+
     public override bool TryFormat(string? value,
         Span<char> destination,
         out int charsWritten,
@@ -28,6 +34,5 @@ internal sealed class DefaultStringFormatter : ValueFormatter<string>
         return true;
     }
 
-    public override string Format(string? value, ReadOnlySpan<char> format, IFormatProvider? _ = null) =>
-        value ?? string.Empty;
+    public override string Format(string? value, string? _1, IFormatProvider? _2 = null) => value ?? string.Empty;
 }

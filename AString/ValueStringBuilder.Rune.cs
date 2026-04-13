@@ -41,8 +41,8 @@ public partial struct ValueStringBuilder
 
         internal ValueStringBuilderRuneEnumerator(ReadOnlyMemory<char> memory)
         {
-            _memory = memory;
-            _current = default;
+            _memory    = memory;
+            _current   = default;
             _nextIndex = 0;
         }
 
@@ -106,7 +106,7 @@ public partial struct ValueStringBuilder
         /// <summary>Resets the current <see cref="ValueStringBuilderRuneEnumerator" /> instance to the beginning of the builder.</summary>
         void IEnumerator.Reset()
         {
-            _current = default;
+            _current   = default;
             _nextIndex = 0;
         }
     }
