@@ -1,4 +1,5 @@
 ﻿using System.Buffers;
+using System.Runtime.CompilerServices;
 using JetBrains.Annotations;
 #if NETCOREAPP3_0_OR_GREATER
 using System.Text;
@@ -116,6 +117,13 @@ public partial struct ValueStringBuilder
     {
         ObjectDisposedException.ThrowIf(_disposed, typeof(ValueStringBuilder));
 
+        if (typeof(T) == typeof(string))
+        {
+            var s = Unsafe.As<T, string>(ref value);
+            Append(s);
+            return;
+        }
+        
         if (FormatterCache.TryGetStringLength(value, out var length))
         {
             EnsureCapacity(_length + length);
@@ -127,9 +135,6 @@ public partial struct ValueStringBuilder
             _length += charsWritten;
             return;
         }
-
-        // const int minimumPredictedCommonLength = 2;
-        // EnsureCapacity(_length + minimumPredictedCommonLength);
 
         const int maxRetry    = 2;
         var       i           = 0;

@@ -275,20 +275,6 @@ public partial struct ValueStringAppender
             AppendSegment(segment, format.Format, provider, 1, arg0, default(nint), default(nint));
         }
     }
-    // internal void AppendFormatInternal<T>(IFormatProvider? provider,
-    //     T arg,
-    //     int width,
-    //     [StringSyntax(StringSyntaxAttribute.CompositeFormat)] ReadOnlySpan<char> format)
-    // {
-    //     ObjectDisposedException.ThrowIf(_disposed, typeof(ValueStringAppender));
-    //
-    //     var cf = (ICustomFormatter?)provider?.GetFormat(typeof(ICustomFormatter));
-    //
-    //     var cfs = cf?.Format(format.ToString(), arg, provider);
-    //
-    //     if (cfs == null) { AppendFormatInternal(arg, width, format, provider); }
-    //     else { AppendFormatInternal(cfs,             width, format); }
-    // }
 
     private void AppendSegment<T>(Segment segment,
         ReadOnlySpan<char> format,

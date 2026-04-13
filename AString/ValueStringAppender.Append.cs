@@ -1,4 +1,5 @@
 ﻿using System.Buffers;
+using System.Runtime.CompilerServices;
 using JetBrains.Annotations;
 #if NETCOREAPP3_0_OR_GREATER
 using System.Text;
@@ -117,6 +118,13 @@ public partial struct ValueStringAppender
 
         ObjectDisposedException.ThrowIf(_disposed, typeof(ValueStringAppender));
 
+        if (typeof(T) == typeof(string))
+        {
+            var s = Unsafe.As<T, string>(ref value);
+            Append(s);
+            return;
+        }
+        
         if (FormatterCache.TryGetStringLength(value, out var length))
         {
             if (TryAppend(ref this, value, length)) { return; }
