@@ -1,5 +1,6 @@
 ﻿using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using Astra.Text.Models;
 using JetBrains.Annotations;
 
@@ -86,8 +87,8 @@ public partial struct ValueStringBuilder
 
     /// <summary>
     ///     Appends the string returned by processing a composite format string, which contains zero or more format items,
-    ///     to this instance. Each format item is replaced by the string representation of any of the arguments using a
-    ///     specified format provider.
+    ///     to this instance. Each format item is replaced by the string representation of the arguments using a specified
+    ///     format provider.
     /// </summary>
     /// <param name="provider">An object that supplies culture-specific formatting information.</param>
     /// <param name="format">A <see cref="AStringCompositeFormat" />.</param>
@@ -129,8 +130,8 @@ public partial struct ValueStringBuilder
 
     /// <summary>
     ///     Appends the string returned by processing a composite format string, which contains zero or more format items,
-    ///     to this instance. Each format item is replaced by the string representation of any of the arguments using a
-    ///     specified format provider.
+    ///     to this instance. Each format item is replaced by the string representation of the arguments using a specified
+    ///     format provider.
     /// </summary>
     /// <typeparam name="TArg0">The type of the first object to format.</typeparam>
     /// <typeparam name="TArg1">The type of the second object to format.</typeparam>
@@ -189,8 +190,8 @@ public partial struct ValueStringBuilder
 
     /// <summary>
     ///     Appends the string returned by processing a composite format string, which contains zero or more format items,
-    ///     to this instance. Each format item is replaced by the string representation of any of the arguments using a
-    ///     specified format provider.
+    ///     to this instance. Each format item is replaced by the string representation of the arguments using a specified
+    ///     format provider.
     /// </summary>
     /// <typeparam name="TArg0">The type of the first object to format.</typeparam>
     /// <typeparam name="TArg1">The type of the second object to format.</typeparam>
@@ -245,8 +246,8 @@ public partial struct ValueStringBuilder
 
     /// <summary>
     ///     Appends the string returned by processing a composite format string, which contains zero or more format items,
-    ///     to this instance. Each format item is replaced by the string representation of any of the arguments using a
-    ///     specified format provider.
+    ///     to this instance. Each format item is replaced by the string representation of the arguments using a specified
+    ///     format provider.
     /// </summary>
     /// <typeparam name="TArg0">The type of the first object to format.</typeparam>
     /// <param name="provider">An object that supplies culture-specific formatting information.</param>
@@ -275,20 +276,6 @@ public partial struct ValueStringBuilder
             AppendSegment(segment, format.Format, provider, 1, arg0, default(nint), default(nint));
         }
     }
-    // internal void AppendFormatInternal<T>(IFormatProvider? provider,
-    //     T arg,
-    //     int width,
-    //     [StringSyntax(StringSyntaxAttribute.CompositeFormat)] ReadOnlySpan<char> format)
-    // {
-    //     ObjectDisposedException.ThrowIf(_disposed, typeof(ValueStringBuilder));
-    //
-    //     var cf = (ICustomFormatter?)provider?.GetFormat(typeof(ICustomFormatter));
-    //
-    //     var cfs = cf?.Format(format.ToString(), arg, provider);
-    //
-    //     if (cfs == null) { AppendFormatInternal(arg, width, format, provider); }
-    //     else { AppendFormatInternal(cfs,             width, format); }
-    // }
 
     private void AppendSegment<T>(Segment segment,
         ReadOnlySpan<char> format,
@@ -310,7 +297,8 @@ public partial struct ValueStringBuilder
                 var index = segment.ArgumentIndex;
                 if (index < 0 || index >= args.Length) { throw new FormatException(); } // TODO
 
-                AppendFormatInternal(args[index], segment.Alignment, format[segment.Range], null, provider);
+                var arg = args[index];
+                AppendFormatInternal(ref arg, segment.Alignment, format[segment.Range], null, provider);
 
                 break;
             default:
@@ -347,13 +335,13 @@ public partial struct ValueStringBuilder
                 switch (index)
                 {
                     case 0:
-                        AppendFormatInternal(arg0, segment.Alignment, format[segment.Range], null, provider);
+                        AppendFormatInternal(ref arg0, segment.Alignment, format[segment.Range], null, provider);
                         break;
                     case 1:
-                        AppendFormatInternal(arg1, segment.Alignment, format[segment.Range], null, provider);
+                        AppendFormatInternal(ref arg1, segment.Alignment, format[segment.Range], null, provider);
                         break;
                     case 2:
-                        AppendFormatInternal(arg2, segment.Alignment, format[segment.Range], null, provider);
+                        AppendFormatInternal(ref arg2, segment.Alignment, format[segment.Range], null, provider);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -365,7 +353,7 @@ public partial struct ValueStringBuilder
         }
     }
 
-    internal void AppendFormatInternal<T>(T value,
+    internal void AppendFormatInternal<T>(ref T value,
         int width,
         ReadOnlySpan<char> formatSpan,
         string? formatString,
@@ -378,11 +366,11 @@ public partial struct ValueStringBuilder
 
         ObjectDisposedException.ThrowIf(_disposed, typeof(ValueStringBuilder));
 
-        if (width <= 0) { AppendFormatLeft(ref this, value, width, formatSpan, formatString, provider); }
-        else { AppendFormatRight(ref this, value, width, formatSpan, formatString, provider); }
+        if (width <= 0) { AppendFormatLeft(ref this, ref value, width, formatSpan, formatString, provider); }
+        else { AppendFormatRight(ref this, ref value, width, formatSpan, formatString, provider); }
 
         static void AppendFormatLeft(ref ValueStringBuilder self,
-            T value,
+            ref T value,
             int width,
             ReadOnlySpan<char> formatSpan,
             string? formatString,
@@ -394,20 +382,29 @@ public partial struct ValueStringBuilder
             const int maxRetry = 2;
             var       i        = 0;
 
-            var guestLength = GetGuestLength<T>();
-            while (true)
+            if (typeof(T) == typeof(string))
             {
-                charsWritten = TryAppend(ref self, value, guestLength * (i + 1), formatSpan, provider);
-                if (charsWritten.HasValue || i++ >= maxRetry) { break; }
-            }
-
-            if (!charsWritten.HasValue)
-            {
-                if (formatString == null && !formatSpan.IsEmpty) { formatString = formatSpan.ToString(); }
-
-                var str = FormatterCache.Format(value, formatString, provider);
-                charsWritten = str.Length;
+                var str = Unsafe.As<T, string?>(ref value);
                 self.Append(str);
+                charsWritten = str?.Length ?? 0;
+            }
+            else
+            {
+                var guestLength = GetGuestLength<T>();
+                while (true)
+                {
+                    charsWritten = TryAppend(ref self, value, guestLength * (i + 1), formatSpan, provider);
+                    if (charsWritten.HasValue || i++ >= maxRetry) { break; }
+                }
+
+                if (!charsWritten.HasValue)
+                {
+                    if (formatString == null && !formatSpan.IsEmpty) { formatString = formatSpan.ToString(); }
+
+                    var str = FormatterCache.Format(value, formatString, provider);
+                    charsWritten = str.Length;
+                    self.Append(str);
+                }
             }
 
             var padding = width - charsWritten.Value;
@@ -416,7 +413,7 @@ public partial struct ValueStringBuilder
             self.Append(' ', padding);
 
             static int? TryAppend(ref ValueStringBuilder self,
-                T value,
+                in T value,
                 int guestLength,
                 ReadOnlySpan<char> format,
                 IFormatProvider? provider) =>
@@ -425,7 +422,7 @@ public partial struct ValueStringBuilder
                     : Fill(ref self, value, format, provider, stackalloc char[guestLength]);
 
             static int? UseArrayBuffer(ref ValueStringBuilder self,
-                T value,
+                in T value,
                 ReadOnlySpan<char> format,
                 IFormatProvider? provider,
                 int length)
@@ -436,7 +433,7 @@ public partial struct ValueStringBuilder
             }
 
             static int? Fill(ref ValueStringBuilder self,
-                T value,
+                in T value,
                 ReadOnlySpan<char> format,
                 IFormatProvider? provider,
                 Span<char> buffer)
@@ -449,7 +446,7 @@ public partial struct ValueStringBuilder
         }
 
         static void AppendFormatRight(ref ValueStringBuilder self,
-            T arg,
+            ref T value,
             int width,
             ReadOnlySpan<char> formatSpan,
             string? formatString,
@@ -461,20 +458,35 @@ public partial struct ValueStringBuilder
             var handler = default(Handler);
             try
             {
-                var guestLength = GetGuestLength<T>();
-                while (true)
+                if (typeof(T) == typeof(string))
                 {
-                    if (TryFill(arg, formatSpan, provider, guestLength, out handler) || i++ >= maxRetry) { break; }
+                    var str = Unsafe.As<T, string?>(ref value);
+                    handler = new Handler(str.AsMemory());
                 }
-
-                if (handler.Span.Length == 0)
+                else
                 {
-                    if (formatString == null && !formatSpan.IsEmpty) { formatString = formatSpan.ToString(); }
+                    Handler? tempHandler = null;
+                    var      guestLength = GetGuestLength<T>();
+                    while (true)
+                    {
+                        if (TryFill(value, formatSpan, provider, guestLength, out var gotHandler))
+                        {
+                            tempHandler = gotHandler;
+                            break;
+                        }
 
-                    var str = FormatterCache.Format(arg, formatString, provider);
-                    handler = new Handler(str.AsSpan());
+                        if (i++ >= maxRetry) { break; }
+                    }
+
+                    if (tempHandler.HasValue) { handler = tempHandler.Value; }
+                    else
+                    {
+                        if (formatString == null && !formatSpan.IsEmpty) { formatString = formatSpan.ToString(); }
+
+                        var str = FormatterCache.Format(value, formatString, provider);
+                        handler = new Handler(str.AsMemory());
+                    }
                 }
-
 
                 var padding = width - handler.Span.Length;
                 if (padding > 0)
@@ -486,7 +498,7 @@ public partial struct ValueStringBuilder
             }
             finally { handler.Dispose(); }
 
-            static bool TryFill(T arg,
+            static bool TryFill(in T value,
                 ReadOnlySpan<char> format,
                 IFormatProvider? provider,
                 int guestLength,
@@ -494,7 +506,7 @@ public partial struct ValueStringBuilder
             {
                 var array = ArrayPool<char>.Shared.Rent(guestLength);
 
-                if (!FormatterCache.TryFormat(arg, array.AsSpan(), out var charsWritten, format, provider))
+                if (!FormatterCache.TryFormat(value, array.AsSpan(), out var charsWritten, format, provider))
                 {
                     handler = default;
                     return false;
@@ -506,19 +518,19 @@ public partial struct ValueStringBuilder
         }
     }
 
-    private ref struct Handler : IDisposable
+    private struct Handler : IDisposable
     {
         private readonly char[]? _buffer;
 
-        public ReadOnlySpan<char> Span { get; }
+        public ReadOnlyMemory<char> Span { get; }
 
         public Handler(char[] buffer, int spanSize)
         {
             _buffer = buffer;
-            Span    = _buffer.AsSpan(0, spanSize);
+            Span    = _buffer.AsMemory(0, spanSize);
         }
 
-        public Handler(ReadOnlySpan<char> buffer) => Span = buffer;
+        public Handler(ReadOnlyMemory<char> buffer) => Span = buffer;
 
         public void Dispose()
         {
@@ -716,26 +728,26 @@ public partial struct ValueStringBuilder
 
     public ref struct ParameterSender
     {
-        private ref      ValueStringBuilder   _valueStringBuilder;
+        private ref      ValueStringBuilder   _builder;
         private readonly IFormatProvider?     _formatProvider;
         private readonly int                  _width;
         private readonly ReadOnlyMemory<char> _formatMemory;
 
-        internal ParameterSender(ref ValueStringBuilder valueStringBuilder,
+        internal ParameterSender(ref ValueStringBuilder ValueStringBuilder,
             IFormatProvider? formatProvider,
             int width,
             ReadOnlyMemory<char> format)
         {
-            _formatProvider     = formatProvider;
-            _width              = width;
-            _formatMemory       = format;
-            _valueStringBuilder = ref valueStringBuilder;
+            _formatProvider = formatProvider;
+            _width          = width;
+            _formatMemory   = format;
+            _builder        = ref ValueStringBuilder;
         }
 
         [PublicAPI]
         public void Send<T>(T? value)
         {
-            _valueStringBuilder.AppendFormatInternal(value, _width, _formatMemory.Span, null, _formatProvider);
+            _builder.AppendFormatInternal(ref value, _width, _formatMemory.Span, null, _formatProvider);
         }
     }
 #endif

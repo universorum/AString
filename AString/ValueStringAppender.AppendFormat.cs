@@ -1,5 +1,6 @@
 ﻿using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using Astra.Text.Models;
 using JetBrains.Annotations;
 
@@ -86,8 +87,8 @@ public partial struct ValueStringAppender
 
     /// <summary>
     ///     Appends the string returned by processing a composite format string, which contains zero or more format items,
-    ///     to this instance. Each format item is replaced by the string representation of any of the arguments using a
-    ///     specified format provider.
+    ///     to this instance. Each format item is replaced by the string representation of the arguments using a specified
+    ///     format provider.
     /// </summary>
     /// <param name="provider">An object that supplies culture-specific formatting information.</param>
     /// <param name="format">A <see cref="AStringCompositeFormat" />.</param>
@@ -129,8 +130,8 @@ public partial struct ValueStringAppender
 
     /// <summary>
     ///     Appends the string returned by processing a composite format string, which contains zero or more format items,
-    ///     to this instance. Each format item is replaced by the string representation of any of the arguments using a
-    ///     specified format provider.
+    ///     to this instance. Each format item is replaced by the string representation of the arguments using a specified
+    ///     format provider.
     /// </summary>
     /// <typeparam name="TArg0">The type of the first object to format.</typeparam>
     /// <typeparam name="TArg1">The type of the second object to format.</typeparam>
@@ -189,8 +190,8 @@ public partial struct ValueStringAppender
 
     /// <summary>
     ///     Appends the string returned by processing a composite format string, which contains zero or more format items,
-    ///     to this instance. Each format item is replaced by the string representation of any of the arguments using a
-    ///     specified format provider.
+    ///     to this instance. Each format item is replaced by the string representation of the arguments using a specified
+    ///     format provider.
     /// </summary>
     /// <typeparam name="TArg0">The type of the first object to format.</typeparam>
     /// <typeparam name="TArg1">The type of the second object to format.</typeparam>
@@ -245,8 +246,8 @@ public partial struct ValueStringAppender
 
     /// <summary>
     ///     Appends the string returned by processing a composite format string, which contains zero or more format items,
-    ///     to this instance. Each format item is replaced by the string representation of any of the arguments using a
-    ///     specified format provider.
+    ///     to this instance. Each format item is replaced by the string representation of the arguments using a specified
+    ///     format provider.
     /// </summary>
     /// <typeparam name="TArg0">The type of the first object to format.</typeparam>
     /// <param name="provider">An object that supplies culture-specific formatting information.</param>
@@ -296,7 +297,8 @@ public partial struct ValueStringAppender
                 var index = segment.ArgumentIndex;
                 if (index < 0 || index >= args.Length) { throw new FormatException(); } // TODO
 
-                AppendFormatInternal(args[index], segment.Alignment, format[segment.Range], null, provider);
+                var arg = args[index];
+                AppendFormatInternal(ref arg, segment.Alignment, format[segment.Range], null, provider);
 
                 break;
             default:
@@ -333,13 +335,13 @@ public partial struct ValueStringAppender
                 switch (index)
                 {
                     case 0:
-                        AppendFormatInternal(arg0, segment.Alignment, format[segment.Range], null, provider);
+                        AppendFormatInternal(ref arg0, segment.Alignment, format[segment.Range], null, provider);
                         break;
                     case 1:
-                        AppendFormatInternal(arg1, segment.Alignment, format[segment.Range], null, provider);
+                        AppendFormatInternal(ref arg1, segment.Alignment, format[segment.Range], null, provider);
                         break;
                     case 2:
-                        AppendFormatInternal(arg2, segment.Alignment, format[segment.Range], null, provider);
+                        AppendFormatInternal(ref arg2, segment.Alignment, format[segment.Range], null, provider);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -351,7 +353,7 @@ public partial struct ValueStringAppender
         }
     }
 
-    internal void AppendFormatInternal<T>(T value,
+    internal void AppendFormatInternal<T>(ref T value,
         int width,
         ReadOnlySpan<char> formatSpan,
         string? formatString,
@@ -364,11 +366,11 @@ public partial struct ValueStringAppender
 
         ObjectDisposedException.ThrowIf(_disposed, typeof(ValueStringAppender));
 
-        if (width <= 0) { AppendFormatLeft(ref this, value, width, formatSpan, formatString, provider); }
-        else { AppendFormatRight(ref this, value, width, formatSpan, formatString, provider); }
+        if (width <= 0) { AppendFormatLeft(ref this, ref value, width, formatSpan, formatString, provider); }
+        else { AppendFormatRight(ref this, ref value, width, formatSpan, formatString, provider); }
 
         static void AppendFormatLeft(ref ValueStringAppender self,
-            T value,
+            ref T value,
             int width,
             ReadOnlySpan<char> formatSpan,
             string? formatString,
@@ -380,20 +382,29 @@ public partial struct ValueStringAppender
             const int maxRetry = 2;
             var       i        = 0;
 
-            var guestLength = GetGuestLength<T>();
-            while (true)
+            if (typeof(T) == typeof(string))
             {
-                charsWritten = TryAppend(ref self, value, guestLength * (i + 1), formatSpan, provider);
-                if (charsWritten.HasValue || i++ >= maxRetry) { break; }
-            }
-
-            if (!charsWritten.HasValue)
-            {
-                if (formatString == null && !formatSpan.IsEmpty) { formatString = formatSpan.ToString(); }
-
-                var str = FormatterCache.Format(value, formatString, provider);
-                charsWritten = str.Length;
+                var str = Unsafe.As<T, string?>(ref value);
                 self.Append(str);
+                charsWritten = str?.Length ?? 0;
+            }
+            else
+            {
+                var guestLength = GetGuestLength<T>();
+                while (true)
+                {
+                    charsWritten = TryAppend(ref self, value, guestLength * (i + 1), formatSpan, provider);
+                    if (charsWritten.HasValue || i++ >= maxRetry) { break; }
+                }
+
+                if (!charsWritten.HasValue)
+                {
+                    if (formatString == null && !formatSpan.IsEmpty) { formatString = formatSpan.ToString(); }
+
+                    var str = FormatterCache.Format(value, formatString, provider);
+                    charsWritten = str.Length;
+                    self.Append(str);
+                }
             }
 
             var padding = width - charsWritten.Value;
@@ -402,7 +413,7 @@ public partial struct ValueStringAppender
             self.Append(' ', padding);
 
             static int? TryAppend(ref ValueStringAppender self,
-                T value,
+                in T value,
                 int guestLength,
                 ReadOnlySpan<char> format,
                 IFormatProvider? provider) =>
@@ -411,7 +422,7 @@ public partial struct ValueStringAppender
                     : Fill(ref self, value, format, provider, stackalloc char[guestLength]);
 
             static int? UseArrayBuffer(ref ValueStringAppender self,
-                T value,
+                in T value,
                 ReadOnlySpan<char> format,
                 IFormatProvider? provider,
                 int length)
@@ -422,7 +433,7 @@ public partial struct ValueStringAppender
             }
 
             static int? Fill(ref ValueStringAppender self,
-                T value,
+                in T value,
                 ReadOnlySpan<char> format,
                 IFormatProvider? provider,
                 Span<char> buffer)
@@ -435,7 +446,7 @@ public partial struct ValueStringAppender
         }
 
         static void AppendFormatRight(ref ValueStringAppender self,
-            T arg,
+            ref T value,
             int width,
             ReadOnlySpan<char> formatSpan,
             string? formatString,
@@ -447,20 +458,35 @@ public partial struct ValueStringAppender
             var handler = default(Handler);
             try
             {
-                var guestLength = GetGuestLength<T>();
-                while (true)
+                if (typeof(T) == typeof(string))
                 {
-                    if (TryFill(arg, formatSpan, provider, guestLength, out handler) || i++ >= maxRetry) { break; }
+                    var str = Unsafe.As<T, string?>(ref value);
+                    handler = new Handler(str.AsMemory());
                 }
-
-                if (handler.Span.Length == 0)
+                else
                 {
-                    if (formatString == null && !formatSpan.IsEmpty) { formatString = formatSpan.ToString(); }
+                    Handler? tempHandler = null;
+                    var      guestLength = GetGuestLength<T>();
+                    while (true)
+                    {
+                        if (TryFill(value, formatSpan, provider, guestLength, out var gotHandler))
+                        {
+                            tempHandler = gotHandler;
+                            break;
+                        }
 
-                    var str = FormatterCache.Format(arg, formatString, provider);
-                    handler = new Handler(str.AsSpan());
+                        if (i++ >= maxRetry) { break; }
+                    }
+
+                    if (tempHandler.HasValue) { handler = tempHandler.Value; }
+                    else
+                    {
+                        if (formatString == null && !formatSpan.IsEmpty) { formatString = formatSpan.ToString(); }
+
+                        var str = FormatterCache.Format(value, formatString, provider);
+                        handler = new Handler(str.AsMemory());
+                    }
                 }
-
 
                 var padding = width - handler.Span.Length;
                 if (padding > 0)
@@ -472,7 +498,7 @@ public partial struct ValueStringAppender
             }
             finally { handler.Dispose(); }
 
-            static bool TryFill(T arg,
+            static bool TryFill(in T value,
                 ReadOnlySpan<char> format,
                 IFormatProvider? provider,
                 int guestLength,
@@ -480,7 +506,7 @@ public partial struct ValueStringAppender
             {
                 var array = ArrayPool<char>.Shared.Rent(guestLength);
 
-                if (!FormatterCache.TryFormat(arg, array.AsSpan(), out var charsWritten, format, provider))
+                if (!FormatterCache.TryFormat(value, array.AsSpan(), out var charsWritten, format, provider))
                 {
                     handler = default;
                     return false;
@@ -492,19 +518,19 @@ public partial struct ValueStringAppender
         }
     }
 
-    private ref struct Handler : IDisposable
+    private struct Handler : IDisposable
     {
         private readonly char[]? _buffer;
 
-        public ReadOnlySpan<char> Span { get; }
+        public ReadOnlyMemory<char> Span { get; }
 
         public Handler(char[] buffer, int spanSize)
         {
             _buffer = buffer;
-            Span    = _buffer.AsSpan(0, spanSize);
+            Span    = _buffer.AsMemory(0, spanSize);
         }
 
-        public Handler(ReadOnlySpan<char> buffer) => Span = buffer;
+        public Handler(ReadOnlyMemory<char> buffer) => Span = buffer;
 
         public void Dispose()
         {
@@ -702,7 +728,7 @@ public partial struct ValueStringAppender
 
     public ref struct ParameterSender
     {
-        private ref      ValueStringAppender  _valueStringBuilder;
+        private ref      ValueStringAppender  _appender;
         private readonly IFormatProvider?     _formatProvider;
         private readonly int                  _width;
         private readonly ReadOnlyMemory<char> _formatMemory;
@@ -712,16 +738,16 @@ public partial struct ValueStringAppender
             int width,
             ReadOnlyMemory<char> format)
         {
-            _formatProvider     = formatProvider;
-            _width              = width;
-            _formatMemory       = format;
-            _valueStringBuilder = ref valueStringAppender;
+            _formatProvider = formatProvider;
+            _width          = width;
+            _formatMemory   = format;
+            _appender       = ref valueStringAppender;
         }
 
         [PublicAPI]
         public void Send<T>(T? value)
         {
-            _valueStringBuilder.AppendFormatInternal(value, _width, _formatMemory.Span, null, _formatProvider);
+            _appender.AppendFormatInternal(ref value, _width, _formatMemory.Span, null, _formatProvider);
         }
     }
 #endif

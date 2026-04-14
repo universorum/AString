@@ -58,7 +58,7 @@ public class ValueStringBuilderTestRune
     }
 
     // Reset() via IEnumerator boxes the struct, so it resets a copy and not the local variable.
-    // Test Reset using the explicit Reset() on a separately obtained enumerator instead.
+    // Test Reset using a separately obtained enumerator instead.
     [Test]
     public async Task EnumerateRunesReEnumerate()
     {
@@ -130,8 +130,6 @@ public class ValueStringBuilderTestRune
     [Test]
     public async Task GetRuneAtSurrogatePairSecondChar()
     {
-        // Accessing the second surrogate directly should also return the full Rune
-        // since TryGetRuneAt on a low surrogate returns false, GetRuneAt throws
         const string text = "a\U0001F6B5b";
         using var    a    = new ValueStringBuilder(text);
         await Assert.That(a.GetRuneAt(1)).IsEqualTo(new Rune(0x1F6B5));
@@ -161,8 +159,7 @@ public class ValueStringBuilderTestRune
     [Test]
     public void GetRuneAtLoneSurrogateThrows()
     {
-        // A lone high surrogate cannot be decoded as a valid Rune
-        var       text = new string(new[] { '\uD83D' });
+        var       text = new string(new[] { '\uD83D' }); // lone high surrogate
         using var a    = new ValueStringBuilder(text);
         Assert.Throws<ArgumentException>(() => a.GetRuneAt(0));
     }
@@ -232,6 +229,46 @@ public class ValueStringBuilderTestRune
         await Assert.That(a.TryGetRuneAt(4, out var r4)).IsTrue();
         await Assert.That(r4).IsEqualTo(new Rune('C'));
     }
-}
 
+    // ─── Cross-chunk boundary ─────────────────────────────────────────────────
+    // Tests surrogate pair spanning two internal chunk buffers.
+    // Uses the real DefaultFixedSize to place the pair at the chunk boundary.
+
+    [Test]
+    public async Task TryGetRuneAtCrossChunkBoundary()
+    {
+        var chunkSize = ValueStringBuilder.DefaultFixedSize;
+
+        // Position the high surrogate at the last slot of chunk 0 (chunkSize - 1),
+        // low surrogate at the first slot of chunk 1 (chunkSize).
+        var prefix = new string('A', chunkSize - 1); // fills chunk 0 up to last slot
+        var text   = prefix + "\U0001F6B5" + "END";  // pair straddles chunk boundary
+
+        using var a = new ValueStringBuilder(text);
+
+        var highSurrogateIndex = chunkSize - 1;
+        await Assert.That(a.TryGetRuneAt(highSurrogateIndex, out var rune)).IsTrue();
+        await Assert.That(rune).IsEqualTo(new Rune(0x1F6B5));
+    }
+
+    [Test]
+    public async Task EnumerateRunesCrossChunkBoundary()
+    {
+        var chunkSize  = ValueStringBuilder.DefaultFixedSize;
+        var prefix     = new string('A', chunkSize - 1);
+        var testString = prefix + "\U0001F6B5" + "END";
+
+        using var a = new ValueStringBuilder(testString);
+
+        var expected = new List<Rune>();
+        foreach (var rune in testString.EnumerateRunes()) { expected.Add(rune); }
+
+        var actual = new List<Rune>();
+        var e      = a.EnumerateRunes();
+        while (e.MoveNext()) { actual.Add(e.Current); }
+
+        await Assert.That(actual.Count).IsEqualTo(expected.Count);
+        for (var i = 0; i < expected.Count; i++) { await Assert.That(actual[i]).IsEqualTo(expected[i]); }
+    }
+}
 #endif

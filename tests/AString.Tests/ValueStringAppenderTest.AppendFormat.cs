@@ -239,11 +239,11 @@ public class ValueStringAppenderTestFormat
     [Test]
     public async Task AppendDelegate()
     {
-        using var sb = new ValueStringAppender();
+        using var sb     = new ValueStringAppender();
         var       format = "{0:0000}, {1,-4:0,00}, {2}";
-        var       arg0 = 1;
-        var       arg1 = 2;
-        var       arg2 = 4;
+        var       arg0   = 1;
+        var       arg1   = 2;
+        var       arg2   = 4;
 
         ReadOnlySpan<int> parameters = [arg0, arg1, arg2];
 

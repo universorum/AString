@@ -4,7 +4,7 @@ internal sealed class DefaultFormatter<T> : ValueFormatter<T>
 {
     public static DefaultFormatter<T> Instance { get; } = new();
 
-    public override bool TryFormat(T value,
+    public override bool TryFormat(in T value,
         Span<char> destination,
         out int charsWritten,
         ReadOnlySpan<char> format,
@@ -21,7 +21,7 @@ internal sealed class DefaultFormatter<T> : ValueFormatter<T>
         return false;
     }
 
-    public override string Format(T value, string? format, IFormatProvider? formatProvider = null) =>
+    public override string Format(in T value, string? format, IFormatProvider? formatProvider = null) =>
         value is IFormattable formattable
             ? formattable.ToString(format, formatProvider)
             : value?.ToString() ?? string.Empty;

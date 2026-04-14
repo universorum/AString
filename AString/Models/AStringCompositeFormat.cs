@@ -156,7 +156,7 @@ public class AStringCompositeFormat
         [PublicAPI]
         public void Send<T>(T? value)
         {
-            _valueStringBuilder.AppendFormatInternal(value, _width, _format.Span, null, _formatProvider);
+            _valueStringBuilder.AppendFormatInternal(ref value, _width, _format.Span, null, _formatProvider);
         }
     }
 

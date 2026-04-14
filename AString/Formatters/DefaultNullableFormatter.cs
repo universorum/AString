@@ -9,7 +9,7 @@ internal sealed class DefaultNullableFormatter<TFormattable> : ValueFormatter<TF
 
     public static DefaultNullableFormatter<TFormattable> Instance { get; } = new();
 
-    public override bool TryFormat(TFormattable? value,
+    public override bool TryFormat(in TFormattable? value,
         Span<char> destination,
         out int charsWritten,
         ReadOnlySpan<char> format,
@@ -24,6 +24,6 @@ internal sealed class DefaultNullableFormatter<TFormattable> : ValueFormatter<TF
         return true;
     }
 
-    public override string Format(TFormattable? value, string? format, IFormatProvider? formatProvider = null) =>
+    public override string Format(in TFormattable? value, string? format, IFormatProvider? formatProvider = null) =>
         !value.HasValue ? string.Empty : InnerFormatter.Format(value.Value, format, formatProvider);
 }

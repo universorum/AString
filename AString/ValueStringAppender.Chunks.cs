@@ -22,8 +22,7 @@ public partial struct ValueStringAppender
     [PublicAPI]
     public readonly ReadOnlyMemoryEnumerator GetChunks() => new(_fixedSize, _buffers, _length);
 
-    [PublicAPI]
-    public readonly ReadOnlyMemoryEnumerator GetChunks(int start, int end) =>
+    internal readonly ReadOnlyMemoryEnumerator GetChunks(int start, int end) =>
         new(_fixedSize, _buffers, _length, start, end);
 
     /// <summary>

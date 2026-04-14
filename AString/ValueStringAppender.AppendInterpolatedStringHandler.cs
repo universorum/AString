@@ -48,7 +48,7 @@ public partial struct ValueStringAppender
         private readonly IFormatProvider? _provider;
 
         // Why does `InterpolatedStringHandlerArgumentAttribute` does not support ref argument?
-        private ValueStringAppender _stringBuilder;
+        private ValueStringAppender _appender;
 
         /// <summary>Creates a handler used to translate an interpolated string into a <see cref="string" />.</summary>
         /// <param name="literalLength">
@@ -67,17 +67,17 @@ public partial struct ValueStringAppender
             ValueStringAppender from,
             IFormatProvider? provider = null)
         {
-            _stringBuilder = new ValueStringAppender { CleanBufferWhenReleased = from.CleanBufferWhenReleased };
-            _provider      = provider;
+            _appender = new ValueStringAppender { CleanBufferWhenReleased = from.CleanBufferWhenReleased };
+            _provider = provider;
         }
 
-        public ReadOnlyMemoryEnumerator GetChunks() => _stringBuilder.GetChunks();
+        public ReadOnlyMemoryEnumerator GetChunks() => _appender.GetChunks();
 
-        public override string ToString() => _stringBuilder.ToString();
+        public override string ToString() => _appender.ToString();
 
         /// <summary>Writes the specified string to the handler.</summary>
         /// <param name="value">The string to write.</param>
-        public void AppendLiteral(string value) => _stringBuilder.Append(value);
+        public void AppendLiteral(string value) => _appender.Append(value);
 
         #region AppendFormatted
 
@@ -85,37 +85,28 @@ public partial struct ValueStringAppender
 
         public void AppendFormatted<T>(T value) => AppendFormatted(value, 0, null);
 
-        public void AppendFormatted<T>(T value, string format) => AppendFormatted(value, 0, format);
-
-        public void AppendFormatted<T>(T value, ReadOnlySpan<char> format) => AppendFormatted(value, 0, format);
+        public void AppendFormatted<T>(T value, string? format) => AppendFormatted(value, 0, format);
 
         public void AppendFormatted<T>(T value, int alignment) => AppendFormatted(value, alignment, null);
 
         public void AppendFormatted<T>(T value, int alignment, string? format)
         {
-            _stringBuilder.AppendFormatInternal(value, alignment, format.AsSpan(), format, _provider);
-        }
-
-        public void AppendFormatted<T>(T value, int alignment, ReadOnlySpan<char> format)
-        {
-            _stringBuilder.AppendFormatInternal(value, alignment, format, null, _provider);
+            _appender.AppendFormatInternal(ref value, alignment, format.AsSpan(), format, _provider);
         }
 
         #endregion
 
         #region AppendFormatted ReadOnlySpan<char>
 
-        public void AppendFormatted(ReadOnlySpan<char> value) => _stringBuilder.Append(value);
+        public void AppendFormatted(ReadOnlySpan<char> value) => _appender.Append(value);
 
-        public void AppendFormatted(ReadOnlySpan<char> value, ReadOnlySpan<char> format) =>
-            AppendFormatted(value, 0, format);
+        public void AppendFormatted(ReadOnlySpan<char> value, string? format) => AppendFormatted(value, 0, format);
 
-        public void AppendFormatted(ReadOnlySpan<char> value, int alignment) =>
-            AppendFormatted(value, alignment, default);
+        public void AppendFormatted(ReadOnlySpan<char> value, int alignment) => AppendFormatted(value, alignment, null);
 
-        public void AppendFormatted(ReadOnlySpan<char> value, int alignment, ReadOnlySpan<char> format)
+        public void AppendFormatted(ReadOnlySpan<char> value, int alignment, string? format)
         {
-            if (alignment == 0) { _stringBuilder.Append(value); }
+            if (alignment == 0) { _appender.Append(value); }
             else
             {
                 var leftAlign = false;
@@ -126,16 +117,16 @@ public partial struct ValueStringAppender
                 }
 
                 var paddingRequired = alignment - value.Length;
-                if (paddingRequired <= 0) { _stringBuilder.Append(value); }
+                if (paddingRequired <= 0) { _appender.Append(value); }
                 else if (leftAlign)
                 {
-                    _stringBuilder.Append(value);
-                    _stringBuilder.Append(' ', paddingRequired);
+                    _appender.Append(value);
+                    _appender.Append(' ', paddingRequired);
                 }
                 else
                 {
-                    _stringBuilder.Append(' ', paddingRequired);
-                    _stringBuilder.Append(value);
+                    _appender.Append(' ', paddingRequired);
+                    _appender.Append(value);
                 }
             }
         }
@@ -144,6 +135,6 @@ public partial struct ValueStringAppender
 
         #endregion
 
-        public void Dispose() { _stringBuilder.Dispose(); }
+        public void Dispose() { _appender.Dispose(); }
     }
 }

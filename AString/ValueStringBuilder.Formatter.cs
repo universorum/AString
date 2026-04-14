@@ -16,14 +16,14 @@ public partial struct ValueStringBuilder
 
     private static class FormatterCache
     {
-        public static bool TryGetStringLength<T>(T value, out int length)
+        public static bool TryGetStringLength<T>(in T value, out int length)
 #if NET9_0_OR_GREATER
             where T : allows ref struct
 #endif
             =>
-                FormatterCache<T>.Formatter.TryGetStringLength(value, out length);
+                FormatterCache<T>.Formatter.TryGetStringLength(in value, out length);
 
-        public static bool TryFormat<T>(T value,
+        public static bool TryFormat<T>(in T value,
             Span<char> destination,
             out int written,
             ReadOnlySpan<char> format = default,
@@ -32,14 +32,14 @@ public partial struct ValueStringBuilder
             where T : allows ref struct
 #endif
             =>
-                FormatterCache<T>.Formatter.TryFormat(value, destination, out written, format, formatProvider);
+                FormatterCache<T>.Formatter.TryFormat(in value, destination, out written, format, formatProvider);
 
-        public static string Format<T>(T value, string? format = null, IFormatProvider? formatProvider = null)
+        public static string Format<T>(in T value, string? format = null, IFormatProvider? formatProvider = null)
 #if NET9_0_OR_GREATER
             where T : allows ref struct
 #endif
             =>
-                FormatterCache<T>.Formatter.Format(value, format, formatProvider);
+                FormatterCache<T>.Formatter.Format(in value, format, formatProvider);
     }
 
     private static class FormatterCache<T>

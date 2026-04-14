@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using System.Text;
 using JetBrains.Annotations;
 
 namespace Astra.Text;
@@ -7,6 +8,22 @@ public partial struct ValueStringBuilder
 {
     [PublicAPI]
     public void AppendLine() => Append(Environment.NewLine);
+
+    /// <summary>Appends a string to the end of this builder.</summary>
+    /// <param name="value">The string to append.</param>
+    [PublicAPI]
+    public void AppendLine(string? value)
+    {
+        Append(value.AsSpan());
+        Append(Environment.NewLine);
+    }
+
+    [PublicAPI]
+    public void AppendLine(char[]? value)
+    {
+        Append((ReadOnlySpan<char>)value.AsSpan());
+        Append(Environment.NewLine);
+    }
 
     /// <summary>Appends part of a string to the end of this builder.</summary>
     /// <param name="value">The string to append.</param>
@@ -44,22 +61,6 @@ public partial struct ValueStringBuilder
     public void AppendLine(char value, int repeatCount)
     {
         Append(value, repeatCount);
-        Append(Environment.NewLine);
-    }
-
-    /// <summary>Appends a string to the end of this builder.</summary>
-    /// <param name="value">The string to append.</param>
-    [PublicAPI]
-    public void AppendLine(string? value)
-    {
-        Append(value.AsSpan());
-        Append(Environment.NewLine);
-    }
-
-    [PublicAPI]
-    public void AppendLine(char[]? value)
-    {
-        Append((ReadOnlySpan<char>)value.AsSpan());
         Append(Environment.NewLine);
     }
 
@@ -110,13 +111,7 @@ public partial struct ValueStringBuilder
     [PublicAPI]
     public void AppendLine([InterpolatedStringHandlerArgument("")] ref AppendInterpolatedStringHandler handler)
     {
-        using (var enumerator = handler.GetChunks())
-        {
-            while (enumerator.MoveNext()) { Append(enumerator.Current); }
-        }
-
-        handler.Dispose();
-
+        Append(ref handler);
         Append(Environment.NewLine);
     }
 
@@ -132,13 +127,16 @@ public partial struct ValueStringBuilder
     public void AppendLine(IFormatProvider? provider,
         [InterpolatedStringHandlerArgument("", nameof(provider))] ref AppendInterpolatedStringHandler handler)
     {
-        using (var enumerator = handler.GetChunks())
-        {
-            while (enumerator.MoveNext()) { Append(enumerator.Current); }
-        }
-
-        handler.Dispose();
-
+        Append(provider, ref handler);
         Append(Environment.NewLine);
     }
+
+#if NETCOREAPP3_0_OR_GREATER
+    [PublicAPI]
+    public void AppendLine(Rune value)
+    {
+        Append(value);
+        Append(Environment.NewLine);
+    }
+#endif
 }

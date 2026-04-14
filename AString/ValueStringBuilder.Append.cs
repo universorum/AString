@@ -41,7 +41,7 @@ public partial struct ValueStringBuilder
     [PublicAPI]
     public void Append(char value, int repeatCount)
     {
-        if (repeatCount <= 0) { return; }
+        ArgumentOutOfRangeException.ThrowIfNegative(repeatCount);
 
         const int stackAllocThreshold = 1024;
 
@@ -108,7 +108,6 @@ public partial struct ValueStringBuilder
         while (chunks.MoveNext()) { Append(chunks.Current); }
     }
 
-
     [PublicAPI]
     public void Append<T>(T value)
 #if NET9_0_OR_GREATER
@@ -119,11 +118,11 @@ public partial struct ValueStringBuilder
 
         if (typeof(T) == typeof(string))
         {
-            var s = Unsafe.As<T, string>(ref value);
+            var s = Unsafe.As<T, string?>(ref value);
             Append(s);
             return;
         }
-        
+
         if (FormatterCache.TryGetStringLength(value, out var length))
         {
             EnsureCapacity(_length + length);

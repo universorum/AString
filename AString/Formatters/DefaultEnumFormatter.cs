@@ -55,7 +55,7 @@ internal sealed class DefaultEnumFormatter<T> : ValueFormatter<T> where T : Enum
 
     public static DefaultEnumFormatter<T> Instance { get; } = new();
 
-    public override bool TryFormat(T value,
+    public override bool TryFormat(in T value,
         Span<char> destination,
         out int charsWritten,
         ReadOnlySpan<char> format,
@@ -92,7 +92,7 @@ internal sealed class DefaultEnumFormatter<T> : ValueFormatter<T> where T : Enum
         return result;
     }
 
-    public override string Format(T value, string? format, IFormatProvider? formatProvider = null)
+    public override string Format(in T value, string? format, IFormatProvider? formatProvider = null)
     {
         if (formatProvider != null) { throw new NotImplementedException(); }
 

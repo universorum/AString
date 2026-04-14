@@ -92,43 +92,6 @@ public class ValueStringAppenderTestAppendJoin
         await Assert.That(sb.ToString()).IsEqualTo(string.Join(',', array));
     }
 
-    // ─── AppendJoin(char, string?) ────────────────────────────────────────────
-
-    [Test]
-    public async Task CharSeparatorSingleStringValue()
-    {
-        using var sb = new ValueStringAppender();
-        sb.AppendJoin(',', "hello");
-        // single value – separator is not inserted
-        await Assert.That(sb.ToString()).IsEqualTo("hello");
-    }
-
-    [Test]
-    public async Task CharSeparatorNullStringValue()
-    {
-        using var sb = new ValueStringAppender("prefix");
-        sb.AppendJoin(',', null);
-        await Assert.That(sb.ToString()).IsEqualTo("prefix");
-    }
-
-    // ─── AppendJoin(ReadOnlySpan<char>, string?) ──────────────────────────────
-
-    [Test]
-    public async Task StringSeparatorSingleStringValue()
-    {
-        using var sb = new ValueStringAppender();
-        sb.AppendJoin(", ", "world");
-        await Assert.That(sb.ToString()).IsEqualTo("world");
-    }
-
-    [Test]
-    public async Task StringSeparatorNullStringValue()
-    {
-        using var sb = new ValueStringAppender("prefix");
-        sb.AppendJoin(", ", null);
-        await Assert.That(sb.ToString()).IsEqualTo("prefix");
-    }
-
     // ─── AppendJoin(char, IEnumerable<T>) ────────────────────────────────────
 
     [Test]

@@ -93,12 +93,12 @@ public partial struct ValueStringBuilder
 
         public void AppendFormatted<T>(T value, int alignment, string? format)
         {
-            _stringBuilder.AppendFormatInternal(value, alignment, format.AsSpan(), format, _provider);
+            _stringBuilder.AppendFormatInternal(ref value, alignment, format.AsSpan(), format, _provider);
         }
 
         public void AppendFormatted<T>(T value, int alignment, ReadOnlySpan<char> format)
         {
-            _stringBuilder.AppendFormatInternal(value, alignment, format, null, _provider);
+            _stringBuilder.AppendFormatInternal(ref value, alignment, format, null, _provider);
         }
 
         #endregion

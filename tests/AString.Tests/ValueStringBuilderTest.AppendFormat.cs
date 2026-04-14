@@ -231,4 +231,24 @@ public class ValueStringBuilderTestFormat
             await Assert.That(sb.ToString()).IsEqualTo(string.Format(format, arg0, arg1));
         }
     }
+    
+    // ─── delegate appends ────────────────────────────────────────────────────── 
+
+#if NET9_0_OR_GREATER
+    [Test]
+    public async Task AppendDelegate()
+    {
+        using var sb     = new ValueStringAppender();
+        var       format = "{0:0000}, {1,-4:0,00}, {2}";
+        var       arg0   = 1;
+        var       arg1   = 2;
+        var       arg2   = 4;
+
+        ReadOnlySpan<int> parameters = [arg0, arg1, arg2];
+
+        sb.AppendFormat(format, parameters, static (ref sender, i, state) => sender.Send(state[i]));
+
+        await Assert.That(sb.ToString()).IsEqualTo(string.Format(format, arg0, arg1, arg2));
+    }
+#endif
 }

@@ -5,17 +5,17 @@ public abstract class ValueFormatter<T>
     where T : allows ref struct
 #endif
 {
-    public virtual bool TryGetStringLength(T value, out int length)
+    public virtual bool TryGetStringLength(in T value, out int length)
     {
         length = 0;
         return false;
     }
 
-    public abstract bool TryFormat(T value,
+    public abstract bool TryFormat(in T value,
         Span<char> destination,
         out int charsWritten,
         ReadOnlySpan<char> format,
         IFormatProvider? formatProvider = null);
 
-    public abstract string Format(T value, string? format, IFormatProvider? formatProvider = null);
+    public abstract string Format(in T value, string? format, IFormatProvider? formatProvider = null);
 }
