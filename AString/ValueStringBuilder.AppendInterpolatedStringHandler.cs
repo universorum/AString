@@ -87,18 +87,11 @@ public partial struct ValueStringBuilder
 
         public void AppendFormatted<T>(T value, string format) => AppendFormatted(value, 0, format);
 
-        public void AppendFormatted<T>(T value, ReadOnlySpan<char> format) => AppendFormatted(value, 0, format);
-
         public void AppendFormatted<T>(T value, int alignment) => AppendFormatted(value, alignment, null);
 
         public void AppendFormatted<T>(T value, int alignment, string? format)
         {
             _stringBuilder.AppendFormatInternal(ref value, alignment, format.AsSpan(), format, _provider);
-        }
-
-        public void AppendFormatted<T>(T value, int alignment, ReadOnlySpan<char> format)
-        {
-            _stringBuilder.AppendFormatInternal(ref value, alignment, format, null, _provider);
         }
 
         #endregion
@@ -107,13 +100,13 @@ public partial struct ValueStringBuilder
 
         public void AppendFormatted(ReadOnlySpan<char> value) => _stringBuilder.Append(value);
 
-        public void AppendFormatted(ReadOnlySpan<char> value, ReadOnlySpan<char> format) =>
+        public void AppendFormatted(ReadOnlySpan<char> value, string? format) =>
             AppendFormatted(value, 0, format);
 
         public void AppendFormatted(ReadOnlySpan<char> value, int alignment) =>
-            AppendFormatted(value, alignment, default);
+            AppendFormatted(value, alignment, null);
 
-        public void AppendFormatted(ReadOnlySpan<char> value, int alignment, ReadOnlySpan<char> format)
+        public void AppendFormatted(ReadOnlySpan<char> value, int alignment, string? format)
         {
             if (alignment == 0) { _stringBuilder.Append(value); }
             else

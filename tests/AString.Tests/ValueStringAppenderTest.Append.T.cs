@@ -1,4 +1,5 @@
 using System.Collections.Frozen;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Astra.Text.Tests;
@@ -7,7 +8,7 @@ public class ValueStringAppenderTestAppendT
 {
     private static FrozenDictionary<Type, object> Dict { get; } = new Dictionary<Type, object>
     {
-        [typeof(bool)] = true,
+        [typeof(bool)]            = true,
         [typeof(sbyte)]           = (sbyte)1,
         [typeof(byte)]            = (byte)2,
         [typeof(short)]           = (short)4,
@@ -147,5 +148,46 @@ public class ValueStringAppenderTestAppendT
 
         a.Append<T>(default!);
         await Assert.That(bcl.ToString()).IsEquatableTo(string.Empty);
+    }
+
+
+    [Test]
+    public async Task AppendTLarge()
+    {
+        var large = new LargeObject(8192);
+
+        using var a = new ValueStringAppender();
+
+        a.Append(large);
+        await Assert.That(a.ToString()).IsEquatableTo(large.Value);
+    }
+
+
+    class LargeObject
+    {
+        private const           int    Seed   = 1337;
+        private static readonly Random Random = new(Seed);
+
+        public string Value { get; }
+
+        public override string ToString() => Value;
+
+        public LargeObject(int length)
+        {
+            Value = string.Create(length,
+                Random,
+                static (span, random) =>
+                {
+                    while (!span.IsEmpty)
+                    {
+                        var next = random.Next(int.MinValue, int.MaxValue);
+                        if (!next.TryFormat(span, out var written)) { break; }
+
+                        span = span[written..];
+                    }
+
+                    span.Fill('x');
+                });
+        }
     }
 }

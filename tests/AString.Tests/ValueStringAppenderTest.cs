@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Text;
 
 namespace Astra.Text.Tests;
@@ -362,6 +363,56 @@ public class ValueStringAppenderTestCore
     {
         using var sb = new ValueStringAppender("hello world");
         await Assert.That(sb.ToString(0, 11)).IsEqualTo("hello world");
+    }
+
+    [Test]
+    public async Task ToStringLargeMid()
+    {
+        var random = new Random(1337);
+
+        var str = string.Create(65536,
+            random,
+            static (span, random) =>
+            {
+                while (!span.IsEmpty)
+                {
+                    var num = random.Next(int.MinValue, int.MaxValue);
+                    if (!num.TryFormat(span, out var written)) { break; }
+
+                    span = span[written..];
+                }
+
+                span.Fill('x');
+            });
+
+
+        using var sb = new ValueStringAppender(str);
+        await Assert.That(sb.ToString(1, 65534)).IsEqualTo(str[1..^1]);
+    }
+
+    [Test]
+    public async Task ToStringLarge()
+    {
+        var random = new Random(1337);
+
+        var str = string.Create(65536,
+            random,
+            static (span, random) =>
+            {
+                while (!span.IsEmpty)
+                {
+                    var num = random.Next(int.MinValue, int.MaxValue);
+                    if (!num.TryFormat(span, out var written)) { break; }
+
+                    span = span[written..];
+                }
+
+                span.Fill('x');
+            });
+
+
+        using var sb = new ValueStringAppender(str);
+        await Assert.That(sb.ToString()).IsEqualTo(str);
     }
 
     // ─── CopyTo ────────────────────────────────────────────────────────────────

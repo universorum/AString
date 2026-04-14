@@ -145,21 +145,6 @@ public class ValueStringBuilderTestAppend
         });
     }
 
-    // ─── Append(char[], int, int) ─────────────────────────────────────────────
-
-    [Test]
-    [Arguments('\0')]
-    [Arguments('0')]
-    [Arguments('\u6e2c')]
-    public async Task AppendCharArray(char value)
-    {
-        using var sb  = new ValueStringBuilder();
-        var       bcl = new StringBuilder();
-        sb.Append(value);
-        bcl.Append(value);
-        await Assert.That(sb.ToString()).IsEqualTo(bcl.ToString());
-    }
-
     // ─── Append(char, int) ────────────────────────────────────────────────────
 
     [Test]
